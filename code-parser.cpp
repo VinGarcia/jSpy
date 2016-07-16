@@ -28,7 +28,19 @@ packToken Statement::exec(const Scope& scope) const {
 
 /* * * * * CodeParser Class * * * * */
 
+CodeParser::CodeParser(const char* code, const char** rest) {
+  compile(code, rest);
+}
+
 CodeParser::CodeParser(const char* code, const Scope& parent_scope, const char** rest) {
+  compile(code, parent_scope, rest);
+}
+
+void CodeParser::compile(const char* code, const char** rest) {
+  compile(code, Scope::empty, rest);
+}
+
+void CodeParser::compile(const char* code, const Scope& parent_scope, const char** rest) {
   scope = parent_scope;
   scope.push(&local);
 
@@ -50,7 +62,7 @@ CodeParser::CodeParser(const char* code, const Scope& parent_scope, const char**
   }
 
   if (*code == '\0') {
-    throw syntax_error("Expected '}' before end of file");
+    throw syntax_error("Expected '}'");
   }
 
   if (rest) *rest = code;

@@ -1,9 +1,6 @@
 #include <list>
-#include <cstdlib>
-#include <cstring> // For strchr
 
 #include "shunting-yard.h"
-#include "shunting-yard-exceptions.h"
 
 class Statement {
   calculator* expr;
@@ -25,8 +22,12 @@ struct CodeParser {
   typedef std::list<Statement> codeBlock_t;
   codeBlock_t list;
 
-  CodeParser(const char* code, const char** rest) : CodeParser(code, Scope::empty, rest) {}
-  CodeParser(const char* code, const Scope& parent_scope = Scope::empty, const char** rest=0);
+  CodeParser() {}
+  CodeParser(const char* code, const char** rest);
+  CodeParser(const char* code, const Scope& parent_scope = Scope::empty, const char** rest = 0);
+
+  void compile(const char* code, const char** rest);
+  void compile(const char* code, const Scope& parent_scope = Scope::empty, const char** rest = 0);
 
   void exec() { exec(this->scope); }
   void exec(const Scope& scope);
