@@ -41,9 +41,6 @@ void CodeParser::compile(const char* code, const char** rest) {
 }
 
 void CodeParser::compile(const char* code, const Scope& parent_scope, const char** rest) {
-  scope = parent_scope;
-  scope.push(&local);
-
   while (true) {
 
     // Ignore blank spaces:
@@ -54,7 +51,7 @@ void CodeParser::compile(const char* code, const Scope& parent_scope, const char
     } else if (strchr(";\n", *code)) {
       ++code;
     } else {
-      list.push_back(Statement(code, scope, ";}\n", &code)); 
+      list.push_back(Statement(code, parent_scope, ";}\n", &code)); 
 
       if (*code == '\0' || *code == '}') break;
       ++code;
@@ -68,8 +65,13 @@ void CodeParser::compile(const char* code, const Scope& parent_scope, const char
   if (rest) *rest = code;
 }
 
-void CodeParser::exec(const Scope& scope) {
+TokenMap_t CodeParser::exec(const Scope& scope) {
+  TokenMap_t local;
+  scope.push(&local);
   for(const auto& stmt : list) {
     stmt.exec(scope);
   }
+  scope.pop();
+  // This copy of the local scope is mainly for debugging.
+  return local;
 }

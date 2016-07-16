@@ -16,9 +16,6 @@ class Statement {
 };
 
 struct CodeParser {
-  Scope scope;
-  TokenMap_t local;
-
   typedef std::list<Statement> codeBlock_t;
   codeBlock_t list;
 
@@ -29,8 +26,7 @@ struct CodeParser {
   void compile(const char* code, const char** rest);
   void compile(const char* code, const Scope& parent_scope = Scope::empty, const char** rest = 0);
 
-  void exec() { exec(this->scope); }
-  void exec(const Scope& scope);
+  TokenMap_t exec(const Scope& scope);
 };
 
 
