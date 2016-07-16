@@ -1,5 +1,8 @@
 #include <list>
 
+#ifndef CODE_PARSER_H_
+#define CODE_PARSER_H_
+
 #include "shunting-yard.h"
 
 class Statement {
@@ -28,6 +31,8 @@ struct CodeParser {
 
   TokenMap_t exec(const Scope& scope);
 };
+
+#endif  // CODE_PARSER_H_
 
 
 
