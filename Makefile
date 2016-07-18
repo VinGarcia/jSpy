@@ -23,6 +23,8 @@ $(EXE): modules $(OBJ) $(SUB_OBJ)
 
 test: $(EXE); ./$(EXE)
 
+check: $(EXE); valgrind ./$(EXE)
+
 modules: $(MODULES)
 	@echo
 	@echo "Checking submodule $<..."
