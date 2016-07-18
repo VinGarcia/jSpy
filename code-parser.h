@@ -3,6 +3,8 @@
 #ifndef CODE_PARSER_H_
 #define CODE_PARSER_H_
 
+typedef unsigned uint;
+
 #include "shunting-yard.h"
 
 class Statement {
@@ -28,6 +30,8 @@ struct CodeParser {
 
   void compile(const char* code, const char** rest);
   void compile(const char* code, const Scope& parent_scope = Scope::empty, const char** rest = 0);
+
+  uint size() { return list.size(); }
 
   TokenMap_t exec(const Scope& scope);
 };

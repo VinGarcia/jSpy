@@ -58,10 +58,6 @@ void CodeParser::compile(const char* code, const Scope& parent_scope, const char
     }
   }
 
-  if (*code == '\0') {
-    throw syntax_error("Expected '}'");
-  }
-
   if (rest) *rest = code;
 }
 
