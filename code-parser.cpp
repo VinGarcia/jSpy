@@ -134,7 +134,7 @@ void ExpStatement::_compile(const char* code, const char** rest,
   expr.compile(code, parent_scope, ";}\n", &code);
 
   // Skip the delimiter character:
-  if (*code) ++code;
+  if (*code && *code != '}') ++code;
 
   if (rest) *rest = code;
 }

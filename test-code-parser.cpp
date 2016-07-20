@@ -27,6 +27,8 @@ TEST_CASE("Build and evaluate BlockStatements") {
   REQUIRE(map["c"].asDouble() == 6);
   REQUIRE(map["b"].asDouble() == 3);
   REQUIRE(rest == &(code_text[14]));
+
+  REQUIRE_NOTHROW(code.compile("{a=b}"));
 }
 
 TEST_CASE("Build and evaluate IfStatements") {
