@@ -1,5 +1,5 @@
 EXE = test-code-parser
-SRC = $(EXE).cpp code-parser.cpp catch.cpp
+SRC = $(EXE).cpp code-parser.cpp generators.cpp catch.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX    =  g++

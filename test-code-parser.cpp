@@ -8,33 +8,108 @@ void PREPARE_ENVIRONMENT() {
 
 }
 
-TEST_CASE("Build and evaluate block of code") {
+TEST_CASE("Build and evaluate BlockStatements") {
   const char* rest = 0;
-  const char* code_text = " a = 2; b = 3; c = a+b; }";
-  TokenMap_t map, local;
-  map["c"] = 0;
+  const char* code_text = "{ a = 2; b = 3; c = a+b; }End";
+  TokenMap_t map;
 
-  CodeParser code(code_text, &rest);
-  REQUIRE_NOTHROW(local = code.exec(&map));
-  REQUIRE(local["a"].asDouble() == 2);
-  REQUIRE(local["b"].asDouble() == 3);
+  BlockStatement code(code_text, &rest);
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["a"].asDouble() == 2);
+  REQUIRE(map["b"].asDouble() == 3);
   REQUIRE(map["c"].asDouble() == 5);
   REQUIRE(rest != 0);
-  REQUIRE(*rest == '}');
+  REQUIRE(*rest == 'E');
+
+  code_text = "  c = a*2 + 2\n  b = 4;";
+  REQUIRE_NOTHROW(code.compile(code_text, &rest));
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asDouble() == 6);
+  REQUIRE(map["b"].asDouble() == 3);
+  REQUIRE(rest == &(code_text[14]));
 }
 
-TEST_CASE("Test the compile function") {
+TEST_CASE("Build and evaluate IfStatements") {
   const char* rest = 0;
-  const char* code_text = " a = 2; b = 3; c = a+b; }";
-  CodeParser code;
-  TokenMap_t map, local;
-  map["c"] = 0;
+  const char* code_text = "if \n ((a+b)*2 == 6) {\n  a = a + 1; c = true;\n} else \n c = false;End";
+  TokenMap_t map;
+  map["a"] = 1;
+  map["b"] = 2;
 
-  code.compile(code_text, &rest);
-  REQUIRE_NOTHROW(local = code.exec(&map));
-  REQUIRE(local["a"].asDouble() == 2);
-  REQUIRE(local["b"].asDouble() == 3);
-  REQUIRE(map["c"].asDouble() == 5);
+  IfStatement code;
+  REQUIRE_NOTHROW(code.compile(code_text+2, &rest));
   REQUIRE(rest != 0);
-  REQUIRE(*rest == '}');
+  REQUIRE(*rest == 'E');
+
+  // Test if it will execute the `then` block:
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asBool() == true);
+  REQUIRE(map["a"].asDouble() == 2);
+
+  // Test if it will execute the `else` block:
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asBool() == false);
+
+  code_text = "if((a+b)*2 == 6) c = true";
+  REQUIRE_NOTHROW(code.compile(code_text+2, &rest));
+  REQUIRE(*rest == '\0');
+
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asBool() == false);
+
+  map["a"] = 1;
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asBool() == true);
+}
+
+TEST_CASE("Build and evaluate ForStatements") {
+  const char* rest = 0;
+  const char* code_text = "for \n (n in range(3)) {\n b=a; a = a + 1; }End(); \n c = false;";
+  TokenMap_t map;
+  ForStatement code;
+  map["a"] = 1;
+
+  REQUIRE_NOTHROW(code.compile(code_text+3, &rest));
+  REQUIRE(rest != 0);
+  REQUIRE(*rest == 'E');
+
+  // Test if it will execute the `then` block:
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["a"].asDouble() == 4);
+  REQUIRE(map["b"].asDouble() == 3);
+  REQUIRE(map["n"].asDouble() == 2);
+
+  map["c"] = 0;
+  code_text = "for(name in range(2,6,2)) c = c+name;E";
+  REQUIRE_NOTHROW(code.compile(code_text+3, &rest));
+  REQUIRE(*rest == 'E');
+
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asDouble() == 6);
+
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["c"].asDouble() == 12);
+}
+
+TEST_CASE("Code block with for and if statements") {
+  const char* factorial_code =
+    "{"
+    "  n = 5;"
+    "  total = 1;"
+    "  for (i in range(1, n+1))"
+    "    total = total*i;"
+    "  if (total == 120)"
+    "    result = total;"
+    "  else"
+    "    result = 'failed!';"
+    "}";
+
+  const char* rest = 0;
+  TokenMap_t map;
+  BlockStatement code;
+
+  REQUIRE_NOTHROW(code.compile(factorial_code, &rest));
+  REQUIRE_NOTHROW(code.exec(&map));
+
+  REQUIRE(map["result"].asDouble() == 120);
 }
