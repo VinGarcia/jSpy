@@ -1,4 +1,4 @@
-
+#include <cstring>
 
 #include "./generators.h"
 
@@ -67,9 +67,11 @@ packToken default_range(const Scope* scope) {
   return Range(from, to, step);
 }
 
+/* * * * * Iterator Startup class * * * * */
+
 struct Iterator::Startup {
   Startup() {
     TokenMap_t& global = Scope::default_global();
-    global["range"] = Function(default_range, 3, range_args);
+    global["range"] = CppFunction(default_range, 3, range_args);
   }
 } iterator_startup;

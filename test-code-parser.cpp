@@ -93,7 +93,7 @@ TEST_CASE("Build and evaluate ForStatements") {
   REQUIRE(map["c"].asDouble() == 12);
 }
 
-TEST_CASE("Code block with for and if statements") {
+TEST_CASE("Code block with for and if statements", "[BlockStatement]") {
   const char* factorial_code =
     "{"
     "  n = 5;"
@@ -114,4 +114,26 @@ TEST_CASE("Code block with for and if statements") {
   REQUIRE_NOTHROW(code.exec(&map));
 
   REQUIRE(map["result"].asDouble() == 120);
+}
+
+TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]") {
+  const char* rest = 0;
+  const char* code_text = "function my_sum (num1, num2) { return = num1 + num2 }End();";
+  FuncDeclaration decl;
+  TokenMap_t map;
+
+  REQUIRE_NOTHROW(decl.compile(code_text+8, &rest, &map));
+  REQUIRE_NOTHROW(decl.exec(&map));
+  REQUIRE(map["my_sum"].str() == "[Function: my_sum]");
+  REQUIRE(rest != 0);
+  REQUIRE(*rest == 'E');
+
+  map["return"] = packToken::None;
+  // TODO VinGarcia: When the return statement is implemented this test should be updated.
+  REQUIRE(calculator::calculate(" my_sum(3,4) ", &map).str() == "None");
+  REQUIRE(map["return"] == 7);
+  REQUIRE(calculator::calculate(" my_sum(1,1) ", &map).str() == "None");
+  REQUIRE(map["return"] == 2);
+  REQUIRE(calculator::calculate(" my_sum(0,4) ", &map).str() == "None");
+  REQUIRE(map["return"] == 4);
 }

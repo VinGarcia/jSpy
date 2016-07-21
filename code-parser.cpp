@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstring> // For strchr
 #include <sstream>
+#include <iostream>
 
 #include "./code-parser.h"
 #include "./generators.h"
@@ -143,23 +144,129 @@ void ExpStatement::_exec(const Scope& scope) const {
   expr.eval(scope);
 }
 
+/* * * * * FuncDeclaration * * * * */
+
+std::string parseName(const char** source) {
+  std::stringstream ss;
+  const char* code = *source;
+
+  // Parse the function name:
+  if (isalpha(*code) || *code == '_') {
+    ss << *code;
+    ++code;
+
+    while (isalnum(*code) || *code == '_') {
+      ss << *code;
+      ++code;
+    }
+
+    // Find the beggining of the non space character:
+    while (isspace(*code)) ++code;
+  } else {
+    throw syntax_error("Expected variable name!");
+  }
+
+  *source = code;
+
+  return ss.str();
+}
+
+void FuncDeclaration::_compile(const char* code, const char** rest,
+                            const Scope& parent_scope) {
+  // Make sure its empty:
+  args.clear();
+
+  // Find the start of the name:
+  while (isspace(*code)) ++code;
+
+  // Parse the function name:
+  try {
+    name = parseName(&code);
+  } catch(syntax_error e) {
+    throw syntax_error("Missing name after `function` key-word!");
+  }
+
+  if (*code != '(') {
+    throw syntax_error("Expected argument list after `function` reserved word!");
+  }
+
+  // Find the next non-blank character:
+  ++code;
+  while (isspace(*code)) ++code;
+
+  // Parse each argument of the block:
+  while (*code && *code != ')') {
+
+    if (*code == ',') {
+      throw syntax_error("Empty item on argument list!");
+    } else {
+      
+      try {
+        // Parse the argument name:
+        args.push_back(parseName(&code));
+      } catch (syntax_error e) {
+        throw syntax_error("Invalid argument name!");
+      }
+
+      if(*code == ',') {
+        ++code;
+      } else if (*code != ')') {
+        if (isalpha(*code) || *code == '_') {
+          syntax_error("Missing ',' in argument list!");
+        } else {
+          syntax_error("Invalid character in argument list!");
+        }
+      }
+    }
+
+    // Discard blank spaces:
+    while (isspace(*code)) ++code;
+  }
+
+  if (*code != ')') {
+    throw syntax_error("Expected function body before end of file!");
+  } else {
+    ++code;
+  }
+
+  body.compile(code, &code, parent_scope);
+
+  if (rest) *rest = code;
+}
+
+void FuncDeclaration::_exec(const Scope& scope) const {
+  TokenMap_t* local = scope.scope.front();
+  (*local)[name] = packToken(new UserFunction(args, body, name));
+}
+
 /* * * * * BlockStatement Class * * * * */
 
 // Decide what type of statement to build:
 Statement* buildStatement(const char** source, const Scope& scope) {
   const char* code = *source;
+  const char* _template;
+  uint i;
+
   switch (*code) {
   case '{':
     return new BlockStatement(code, source, scope);
   case 'i':
     if (code[1] == 'f' && !(isalnum(code[2]) || code[2] == '_'))
       return new IfStatement(code+2, source, scope);
+    break;
   case 'f':
     if (code[1] == 'o' && code[2] == 'r' && !(isalnum(code[3]) || code[3] == '_'))
       return new ForStatement(code+3, source, scope);
-  default:
-    return new ExpStatement(code, source, scope);
+
+    _template = "function";
+    for (i = 0; i < 8; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 8)
+      return new FuncDeclaration(code+8, source, scope);
   }
+
+  return new ExpStatement(code, source, scope);
 }
 
 void BlockStatement::cleanList(codeBlock_t* list) {
@@ -168,6 +275,20 @@ void BlockStatement::cleanList(codeBlock_t* list) {
   }
 
   list->clear();
+}
+
+BlockStatement::BlockStatement(const BlockStatement& other) {
+  for(const Statement* stmt : other.list) {
+    list.push_back(stmt->clone());
+  }
+}
+
+BlockStatement& BlockStatement::operator=(const BlockStatement& other) {
+  cleanList(&list);
+  for(const Statement* stmt : other.list) {
+    list.push_back(stmt->clone());
+  }
+  return *this;
 }
 
 BlockStatement::~BlockStatement() {
@@ -188,7 +309,7 @@ void BlockStatement::_compile(const char* code, const char** rest,
     while (isspace(*code)) ++code;
 
     // Parse each statement of the block:
-    while (*code != '\0' && *code != '}') {
+    while (*code && *code != '}') {
       // Ignore empty statements:
       if (strchr(";\n", *code)) {
         ++code;
