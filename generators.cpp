@@ -12,12 +12,13 @@ class Range : public Iterator {
 
   packToken* next() {
     long value = i;
-    i += step;
-    if (value < to) {
-      return new packToken((double)value);
-    } else {
+    if ((step > 0 && value >= to) || (step < 0 && value <= to)) {
       i = from;
       return NULL;
+    } else {
+      std::cout << from << "," << i << "/" << to << "," << step << std::endl;
+      i += step;
+      return new packToken((double)value);
     }
   }
 
