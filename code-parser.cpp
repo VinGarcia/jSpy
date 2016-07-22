@@ -114,7 +114,7 @@ void ForStatement::_exec(const Scope& scope) const {
   packToken p_it = it_expr.eval(scope);
 
   if (p_it->type == IT) {
-    it = static_cast<Iterator*>(p_it->clone());
+    it = static_cast<Iterator*>((TokenBase*)p_it);
   } else {
     throw syntax_error("The evaluated object should be an iterator!");
   }
@@ -124,8 +124,6 @@ void ForStatement::_exec(const Scope& scope) const {
     body.exec(scope);
     delete value;
   }
-
-  delete it;
 }
 
 /* * * * * ExpStatement Class * * * * */

@@ -16,7 +16,6 @@ class Range : public Iterator {
       i = from;
       return NULL;
     } else {
-      std::cout << from << "," << i << "/" << to << "," << step << std::endl;
       i += step;
       return new packToken((double)value);
     }
