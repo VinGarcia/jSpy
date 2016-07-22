@@ -33,7 +33,7 @@ TEST_CASE("Build and evaluate BlockStatements") {
 
 TEST_CASE("Build and evaluate IfStatements") {
   const char* rest = 0;
-  const char* code_text = "if \n ((a+b)*2 == 6) {\n  a = a + 1; c = true;\n} else \n c = false;End";
+  const char* code_text = "if \n ((a+b)*2 == 6) {\n  a = a + 1; c = True;\n} else \n c = False;End";
   TokenMap_t map;
   map["a"] = 1;
   map["b"] = 2;
@@ -52,7 +52,7 @@ TEST_CASE("Build and evaluate IfStatements") {
   REQUIRE_NOTHROW(code.exec(&map));
   REQUIRE(map["c"].asBool() == false);
 
-  code_text = "if((a+b)*2 == 6) c = true";
+  code_text = "if((a+b)*2 == 6) c = True";
   REQUIRE_NOTHROW(code.compile(code_text+2, &rest));
   REQUIRE(*rest == '\0');
 
@@ -66,7 +66,7 @@ TEST_CASE("Build and evaluate IfStatements") {
 
 TEST_CASE("Build and evaluate ForStatements") {
   const char* rest = 0;
-  const char* code_text = "for \n (n in range(3)) {\n b=a; a = a + 1; }End(); \n c = false;";
+  const char* code_text = "for \n (n in range(3)) {\n b=a; a = a + 1; }End(); \n c = False;";
   TokenMap_t map;
   ForStatement code;
   map["a"] = 1;
