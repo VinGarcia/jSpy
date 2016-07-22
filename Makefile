@@ -1,5 +1,6 @@
 EXE = test-code-parser
-SRC = $(EXE).cpp code-parser.cpp generators.cpp catch.cpp
+CATCH = catch
+SRC = code-parser.cpp generators.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX    =  g++
@@ -18,8 +19,14 @@ all: $(EXE)
 
 %.o: %.cpp *.h; $(CXX) $(CFLAGS) -c $<
 
-$(EXE): modules $(OBJ) $(SUB_OBJ)
-	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) -o $(EXE)
+$(EXE): modules $(OBJ) $(SUB_OBJ) $(CATCH).o
+	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) $(CATCH).o $(EXE).cpp -o $(EXE)
+
+jspy: modules $(OBJ) $(SUB_OBJ)
+	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) jspy.cpp -o jspy
+
+run: jspy
+	./jspy
 
 test: $(EXE); ./$(EXE)
 
