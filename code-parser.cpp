@@ -47,11 +47,11 @@ void IfStatement::_compile(const char* code, const char** rest,
   if(rest) *rest = code;
 }
 
-void IfStatement::_exec(TokenMap* scope) const {
+returnState IfStatement::_exec(TokenMap* scope) const {
   if (cond.eval(scope).asBool()) {
-    _then.exec(scope);
+    return _then.exec(scope);
   } else {
-    _else.exec(scope);
+    return _else.exec(scope);
   }
 }
 
@@ -106,7 +106,7 @@ void ForStatement::_compile(const char* code, const char** rest,
   }
 }
 
-void ForStatement::_exec(TokenMap* scope) const {
+returnState ForStatement::_exec(TokenMap* scope) const {
   Iterator* it;
 
   packToken p_it = it_expr.eval(scope);
@@ -117,11 +117,17 @@ void ForStatement::_exec(TokenMap* scope) const {
     throw syntax_error("The evaluated object should be an iterator!");
   }
 
+  returnState rs;
   for (packToken* value = it->next(); value; value = it->next()) {
     (*scope)[name] = *value;
-    body.exec(scope);
+    rs = body.exec(scope);
     delete value;
+    
+    if (rs.type == RETURN)
+      return rs;
   }
+
+  return NORMAL;
 }
 
 /* * * * * WhileStatement class * * * * */
@@ -148,10 +154,14 @@ void WhileStatement::_compile(const char* code, const char** rest,
   body.compile(code, rest, parent_scope);
 }
 
-void WhileStatement::_exec(TokenMap* scope) const {
+returnState WhileStatement::_exec(TokenMap* scope) const {
+  returnState rs;
   while (cond.eval(scope).asBool() == true) {
-    body.exec(scope);
+    rs = body.exec(scope);
+    if (rs.type == RETURN) return rs;
   }
+
+  return NORMAL;
 }
 
 /* * * * * ExpStatement Class * * * * */
@@ -166,8 +176,25 @@ void ExpStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-void ExpStatement::_exec(TokenMap* scope) const {
+returnState ExpStatement::_exec(TokenMap* scope) const {
   expr.eval(scope);
+
+  return NORMAL;
+}
+
+/* * * * * ExpStatement Class * * * * */
+
+void ReturnStatement::_compile(const char* code, const char** rest,
+                            TokenMap* parent_scope) {
+  expr.compile(code, parent_scope, ";}\n", &code);
+
+  if (*code && *code != '}') ++code;
+
+  if (rest) *rest = code;
+}
+
+returnState ReturnStatement::_exec(TokenMap* scope) const {
+  return returnState(RETURN, expr.eval(scope));
 }
 
 /* * * * * FuncDeclaration * * * * */
@@ -260,8 +287,10 @@ void FuncDeclaration::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-void FuncDeclaration::_exec(TokenMap* scope) const {
+returnState FuncDeclaration::_exec(TokenMap* scope) const {
   (*scope)[name] = packToken(new UserFunction(args, body, name));
+
+  return NORMAL;
 }
 
 /* * * * * BlockStatement Class * * * * */
@@ -275,6 +304,15 @@ Statement* buildStatement(const char** source, TokenMap* scope) {
   switch (*code) {
   case '{':
     return new BlockStatement(code, source, scope);
+  case 'r':
+    _template = "return";
+    for (i = 1; i < 6; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 6 && !(isalnum(code[i]) || code[i] == '_'))
+      return new ReturnStatement(code+6, source, scope);
+    
+    break;
   case 'i':
     if (code[1] == 'f' && !(isalnum(code[2]) || code[2] == '_'))
       return new IfStatement(code+2, source, scope);
@@ -284,7 +322,7 @@ Statement* buildStatement(const char** source, TokenMap* scope) {
     for (i = 1; i < 5; ++i)
       if (code[i] != _template[i]) break;
 
-    if (i == 5)
+    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
       return new WhileStatement(code+5, source, scope);
 
     break;
@@ -296,7 +334,7 @@ Statement* buildStatement(const char** source, TokenMap* scope) {
     for (i = 1; i < 8; ++i)
       if (code[i] != _template[i]) break;
 
-    if (i == 8)
+    if (i == 8 && !(isalnum(code[i]) || code[i] == '_'))
       return new FuncDeclaration(code+8, source, scope);
   }
 
@@ -367,8 +405,12 @@ void BlockStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-void BlockStatement::_exec(TokenMap* scope) const {
+returnState BlockStatement::_exec(TokenMap* scope) const {
+  returnState rs;
   for(const auto stmt : list) {
-    stmt->exec(scope);
+    rs = stmt->exec(scope);
+    if (rs.type == RETURN) return rs;
   }
+
+  return NORMAL;
 }

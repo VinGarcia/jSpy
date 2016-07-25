@@ -33,8 +33,13 @@ class UserFunction : public Function {
 
   virtual const argsList args() const { return _args; };
   virtual packToken exec(TokenMap* scope) const {
-    body.exec(scope);
-    return packToken::None;
+    returnState st;
+    st = body.exec(scope);
+    if (st.type == RETURN) {
+      return st.value;
+    } else {
+      return packToken::None;
+    }
   }
 
   virtual TokenBase* clone() const {

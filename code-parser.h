@@ -4,14 +4,26 @@
 #define CODE_PARSER_H_
 
 typedef unsigned uint;
+typedef unsigned char uint8;
 
 #include "shunting-yard.h"
+
+enum returnType { NORMAL, RETURN };
+
+struct returnState {
+  uint8 type;
+  packToken value;
+  returnState() : type(NORMAL), value(packToken::None) {}
+  returnState(const returnType& type) : type(type), value(packToken::None) {}
+  returnState(const returnType& type, packToken value)
+              : type(type), value(value) {}
+};
 
 class Statement {
  protected:
   virtual void _compile(const char* code, const char** rest,
                         TokenMap* parent_scope) = 0;
-  virtual void _exec(TokenMap* scope) const = 0;
+  virtual returnState _exec(TokenMap* scope) const = 0;
 
  public:
   virtual ~Statement() {}
@@ -20,7 +32,7 @@ class Statement {
     return _compile(code, rest, parent_scope);
   }
 
-  void exec(TokenMap* scope) const { _exec(scope); }
+  returnState exec(TokenMap* scope) const { return _exec(scope); }
 
   virtual Statement* clone() const = 0;
 };
@@ -34,7 +46,7 @@ class BlockStatement : public Statement {
 
  private:
   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-  void _exec(TokenMap* scope) const;
+  returnState _exec(TokenMap* scope) const;
 
  public:
   BlockStatement() {}
@@ -59,7 +71,7 @@ class IfStatement : public Statement {
 
  private:
   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-  void _exec(TokenMap* scope) const;
+  returnState _exec(TokenMap* scope) const;
 
  public:
   IfStatement() {}
@@ -79,7 +91,7 @@ class ForStatement : public Statement {
 
  private:
   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-  void _exec(TokenMap* scope) const;
+  returnState _exec(TokenMap* scope) const;
 
  public:
   ForStatement() {}
@@ -98,7 +110,7 @@ class WhileStatement : public Statement {
 
  private:
   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-  void _exec(TokenMap* scope) const;
+  returnState _exec(TokenMap* scope) const;
 
  public:
   WhileStatement() {}
@@ -116,7 +128,7 @@ class ExpStatement : public Statement {
 
  private:
   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-  void _exec(TokenMap* scope) const;
+  returnState _exec(TokenMap* scope) const;
 
  public:
   ExpStatement() {}
@@ -137,7 +149,7 @@ class FuncDeclaration : public Statement {
 
  private:
   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-  void _exec(TokenMap* scope) const;
+  returnState _exec(TokenMap* scope) const;
 
  public:
   FuncDeclaration() {}
@@ -149,5 +161,24 @@ class FuncDeclaration : public Statement {
     return new FuncDeclaration(*this);
   }
 };
+
+class ReturnStatement : public Statement {
+  calculator expr;
+
+ private:
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  returnState _exec(TokenMap* scope) const;
+
+ public:
+  ReturnStatement() {}
+  ReturnStatement(const char* code, const char** rest = 0,
+               TokenMap* parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new ReturnStatement(*this);
+  }
+};
+
 
 #endif  // CODE_PARSER_H_
