@@ -8,10 +8,10 @@ DEBUG = -g
 CFLAGS = -Wall -std=c++11 $(DEBUG)
 
 # * * * * * Subdirectories * * * * *
-MODULES=exp-parser
-CFLAGS += -I./exp-parser
-#SUB_OBJ = $(filter-out exp-parser/catch.o $(wildcard exp-parser/*.o))
-SUB_OBJ = functions.o packToken.o shunting-yard.o
+SUB_OBJ = $(addprefix exp-parser/, shunting-yard.o packToken.o functions.o)
+
+MODULES += $(sort $(dir $(SUB_OBJ)))
+CFLAGS += $(addprefix -I./, $(MODULES))
 
 # * * * * * Recipes * * * * *
 
@@ -35,10 +35,7 @@ check: $(EXE); valgrind ./$(EXE)
 modules: $(MODULES)
 	@echo
 	@echo "Checking submodule $<..."
-	make -s -C $</
+	make -s -C $<
 	@echo
 
-$(SUB_OBJ): $(MODULES)
-	rsync -u $(foreach module, $(MODULES), $(module))/*.o .
-
-clean:; rm -f $(EXE) *.o
+clean:; rm -f $(EXE) jspy *.o
