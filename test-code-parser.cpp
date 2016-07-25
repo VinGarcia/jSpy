@@ -75,7 +75,6 @@ TEST_CASE("Build and evaluate ForStatements") {
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
 
-  // Test if it will execute the `then` block:
   REQUIRE_NOTHROW(code.exec(&map));
   REQUIRE(map["a"].asDouble() == 4);
   REQUIRE(map["b"].asDouble() == 3);
@@ -91,6 +90,22 @@ TEST_CASE("Build and evaluate ForStatements") {
 
   REQUIRE_NOTHROW(code.exec(&map));
   REQUIRE(map["c"].asDouble() == 12);
+}
+
+TEST_CASE("Build and evaluate WhileStatements") {
+  const char* rest = 0;
+  const char* code_text = "while \n (n < 10) {\n b=n; n = n + 1; }End(); \n c = False;";
+  TokenMap map;
+  WhileStatement code;
+  map["n"] = 1;
+
+  REQUIRE_NOTHROW(code.compile(code_text+5, &rest));
+  REQUIRE(rest != 0);
+  REQUIRE(*rest == 'E');
+  
+  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE(map["n"].asDouble() == 10);
+  REQUIRE(map["b"].asDouble() == 9);
 }
 
 TEST_CASE("Code block with for and if statements", "[BlockStatement]") {

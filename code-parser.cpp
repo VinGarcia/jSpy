@@ -55,7 +55,7 @@ void IfStatement::_exec(TokenMap* scope) const {
   }
 }
 
-/* * * * * ExpStatement Class * * * * */
+/* * * * * ForStatement Class * * * * */
 
 void ForStatement::_compile(const char* code, const char** rest,
                             TokenMap* parent_scope) {
@@ -121,6 +121,36 @@ void ForStatement::_exec(TokenMap* scope) const {
     (*scope)[name] = *value;
     body.exec(scope);
     delete value;
+  }
+}
+
+/* * * * * WhileStatement class * * * * */
+
+void WhileStatement::_compile(const char* code, const char** rest,
+                              TokenMap* parent_scope) {
+  std::stringstream ss;
+
+  while (isspace(*code)) ++code;
+
+  if (*code != '(') {
+    throw syntax_error("Expected '(' after `while` statement!");
+  }
+
+  // Parse the condition:
+  ++code;
+  cond.compile(code, parent_scope, ")", &code);
+
+  if (*code != ')') {
+    throw syntax_error("Missing ')' after `while(` statement!");
+  }
+
+  ++code;
+  body.compile(code, rest, parent_scope);
+}
+
+void WhileStatement::_exec(TokenMap* scope) const {
+  while (cond.eval(scope).asBool() == true) {
+    body.exec(scope);
   }
 }
 
@@ -249,12 +279,21 @@ Statement* buildStatement(const char** source, TokenMap* scope) {
     if (code[1] == 'f' && !(isalnum(code[2]) || code[2] == '_'))
       return new IfStatement(code+2, source, scope);
     break;
+  case 'w':
+    _template = "while";
+    for (i = 1; i < 5; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 5)
+      return new WhileStatement(code+5, source, scope);
+
+    break;
   case 'f':
     if (code[1] == 'o' && code[2] == 'r' && !(isalnum(code[3]) || code[3] == '_'))
       return new ForStatement(code+3, source, scope);
 
     _template = "function";
-    for (i = 0; i < 8; ++i)
+    for (i = 1; i < 8; ++i)
       if (code[i] != _template[i]) break;
 
     if (i == 8)

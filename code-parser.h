@@ -92,21 +92,24 @@ class ForStatement : public Statement {
   }
 };
 
-// class WhileStatement : public Statement {
-//   calculator cond;
-//   BlockStatement body;
+class WhileStatement : public Statement {
+  calculator cond;
+  BlockStatement body;
 
-//  private:
-//   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
-//   void _exec(TokenMap* scope) const;
+ private:
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  void _exec(TokenMap* scope) const;
 
-//  public:
-//   WhileStatement() {}
-//   WhileStatement(const char* code, const char** rest = 0,
-//                TokenMap* parent_scope = &TokenMap::empty) {
-//     _compile(code, rest, parent_scope);
-//   }
-// };
+ public:
+  WhileStatement() {}
+  WhileStatement(const char* code, const char** rest = 0,
+                 TokenMap* parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new WhileStatement(*this);
+  }
+};
 
 class ExpStatement : public Statement {
   calculator expr;
