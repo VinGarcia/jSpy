@@ -10,7 +10,7 @@
 /* * * * * IfStatement Class * * * * */
 
 void IfStatement::_compile(const char* code, const char** rest,
-                           const Scope& parent_scope) {
+                           TokenMap* parent_scope) {
 
   while (isspace(*code)) ++code;
 
@@ -47,7 +47,7 @@ void IfStatement::_compile(const char* code, const char** rest,
   if(rest) *rest = code;
 }
 
-void IfStatement::_exec(const Scope& scope) const {
+void IfStatement::_exec(TokenMap* scope) const {
   if (cond.eval(scope).asBool()) {
     _then.exec(scope);
   } else {
@@ -58,7 +58,7 @@ void IfStatement::_exec(const Scope& scope) const {
 /* * * * * ExpStatement Class * * * * */
 
 void ForStatement::_compile(const char* code, const char** rest,
-                            const Scope& parent_scope) {
+                            TokenMap* parent_scope) {
   std::stringstream ss;
 
   while (isspace(*code)) ++code;
@@ -106,9 +106,7 @@ void ForStatement::_compile(const char* code, const char** rest,
   }
 }
 
-void ForStatement::_exec(const Scope& scope) const {
-  // Get the local token map:
-  TokenMap_t* local = scope.scope.front();
+void ForStatement::_exec(TokenMap* scope) const {
   Iterator* it;
 
   packToken p_it = it_expr.eval(scope);
@@ -120,7 +118,7 @@ void ForStatement::_exec(const Scope& scope) const {
   }
 
   for (packToken* value = it->next(); value; value = it->next()) {
-    (*local)[name] = *value;
+    (*scope)[name] = *value;
     body.exec(scope);
     delete value;
   }
@@ -129,7 +127,7 @@ void ForStatement::_exec(const Scope& scope) const {
 /* * * * * ExpStatement Class * * * * */
 
 void ExpStatement::_compile(const char* code, const char** rest,
-                            const Scope& parent_scope) {
+                            TokenMap* parent_scope) {
   expr.compile(code, parent_scope, ";}\n", &code);
 
   // Skip the delimiter character:
@@ -138,7 +136,7 @@ void ExpStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-void ExpStatement::_exec(const Scope& scope) const {
+void ExpStatement::_exec(TokenMap* scope) const {
   expr.eval(scope);
 }
 
@@ -170,7 +168,7 @@ std::string parseName(const char** source) {
 }
 
 void FuncDeclaration::_compile(const char* code, const char** rest,
-                            const Scope& parent_scope) {
+                            TokenMap* parent_scope) {
   // Make sure its empty:
   args.clear();
 
@@ -232,15 +230,14 @@ void FuncDeclaration::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-void FuncDeclaration::_exec(const Scope& scope) const {
-  TokenMap_t* local = scope.scope.front();
-  (*local)[name] = packToken(new UserFunction(args, body, name));
+void FuncDeclaration::_exec(TokenMap* scope) const {
+  (*scope)[name] = packToken(new UserFunction(args, body, name));
 }
 
 /* * * * * BlockStatement Class * * * * */
 
 // Decide what type of statement to build:
-Statement* buildStatement(const char** source, const Scope& scope) {
+Statement* buildStatement(const char** source, TokenMap* scope) {
   const char* code = *source;
   const char* _template;
   uint i;
@@ -294,7 +291,7 @@ BlockStatement::~BlockStatement() {
 }
 
 void BlockStatement::_compile(const char* code, const char** rest,
-                              const Scope& parent_scope) {
+                              TokenMap* parent_scope) {
   // Make sure the list is empty:
   cleanList(&list);
 
@@ -331,7 +328,7 @@ void BlockStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-void BlockStatement::_exec(const Scope& scope) const {
+void BlockStatement::_exec(TokenMap* scope) const {
   for(const auto stmt : list) {
     stmt->exec(scope);
   }

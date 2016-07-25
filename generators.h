@@ -32,8 +32,8 @@ class UserFunction : public Function {
                : _args(args), body(body) { this->name = name; }
 
   virtual const argsList args() const { return _args; };
-  virtual packToken exec(const Scope* scope) const {
-    body.exec(*scope);
+  virtual packToken exec(TokenMap* scope) const {
+    body.exec(scope);
     return packToken::None;
   }
 
@@ -44,7 +44,7 @@ class UserFunction : public Function {
 
 
 // class Generator : public Iterator {
-//   TokenMap_t local;
+//   TokenMap local;
 
 // };
 

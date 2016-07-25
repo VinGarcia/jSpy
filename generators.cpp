@@ -31,7 +31,7 @@ class Range : public Iterator {
 };
 
 const char* range_args[] = {"from", "to", "step"};
-packToken default_range(const Scope* scope) {
+packToken default_range(TokenMap* scope) {
   long to, step, from;
 
   packToken* p_from = scope->find("from");
@@ -71,7 +71,7 @@ packToken default_range(const Scope* scope) {
 
 struct Iterator::Startup {
   Startup() {
-    TokenMap_t& global = Scope::default_global();
+    TokenMap& global = TokenMap::default_global();
     global["range"] = CppFunction(default_range, 3, range_args);
   }
 } iterator_startup;

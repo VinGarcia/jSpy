@@ -10,17 +10,17 @@ typedef unsigned uint;
 class Statement {
  protected:
   virtual void _compile(const char* code, const char** rest,
-                        const Scope& parent_scope) = 0;
-  virtual void _exec(const Scope& scope) const = 0;
+                        TokenMap* parent_scope) = 0;
+  virtual void _exec(TokenMap* scope) const = 0;
 
  public:
   virtual ~Statement() {}
   void compile(const char* code, const char** rest = 0,
-               const Scope& parent_scope = Scope::empty) {
+               TokenMap* parent_scope = &TokenMap::empty) {
     return _compile(code, rest, parent_scope);
   }
 
-  void exec(const Scope& scope) const { _exec(scope); }
+  void exec(TokenMap* scope) const { _exec(scope); }
 
   virtual Statement* clone() const = 0;
 };
@@ -33,13 +33,13 @@ class BlockStatement : public Statement {
   void cleanList(codeBlock_t* list);
 
  private:
-  void _compile(const char* code, const char** rest, const Scope& parent_scope);
-  void _exec(const Scope& scope) const;
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  void _exec(TokenMap* scope) const;
 
  public:
   BlockStatement() {}
   BlockStatement(const char* code, const char** rest = 0,
-            const Scope& parent_scope = Scope::empty) {
+            TokenMap* parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   BlockStatement(const BlockStatement& other);
@@ -58,13 +58,13 @@ class IfStatement : public Statement {
   BlockStatement _else;
 
  private:
-  void _compile(const char* code, const char** rest, const Scope& parent_scope);
-  void _exec(const Scope& scope) const;
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  void _exec(TokenMap* scope) const;
 
  public:
   IfStatement() {}
   IfStatement(const char* code, const char** rest = 0,
-              const Scope& parent_scope = Scope::empty) {
+              TokenMap* parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   virtual Statement* clone() const {
@@ -78,13 +78,13 @@ class ForStatement : public Statement {
   BlockStatement body;
 
  private:
-  void _compile(const char* code, const char** rest, const Scope& parent_scope);
-  void _exec(const Scope& scope) const;
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  void _exec(TokenMap* scope) const;
 
  public:
   ForStatement() {}
   ForStatement(const char* code, const char** rest = 0,
-               const Scope& parent_scope = Scope::empty) {
+               TokenMap* parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   virtual Statement* clone() const {
@@ -97,13 +97,13 @@ class ForStatement : public Statement {
 //   BlockStatement body;
 
 //  private:
-//   void _compile(const char* code, const char** rest, const Scope& parent_scope);
-//   void _exec(const Scope& scope) const;
+//   void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+//   void _exec(TokenMap* scope) const;
 
 //  public:
 //   WhileStatement() {}
 //   WhileStatement(const char* code, const char** rest = 0,
-//                const Scope& parent_scope = Scope::empty) {
+//                TokenMap* parent_scope = &TokenMap::empty) {
 //     _compile(code, rest, parent_scope);
 //   }
 // };
@@ -112,13 +112,13 @@ class ExpStatement : public Statement {
   calculator expr;
 
  private:
-  void _compile(const char* code, const char** rest, const Scope& parent_scope);
-  void _exec(const Scope& scope) const;
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  void _exec(TokenMap* scope) const;
 
  public:
   ExpStatement() {}
   ExpStatement(const char* code, const char** rest = 0,
-               const Scope& parent_scope = Scope::empty) {
+               TokenMap* parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   virtual Statement* clone() const {
@@ -133,13 +133,13 @@ class FuncDeclaration : public Statement {
   std::string name;
 
  private:
-  void _compile(const char* code, const char** rest, const Scope& parent_scope);
-  void _exec(const Scope& scope) const;
+  void _compile(const char* code, const char** rest, TokenMap* parent_scope);
+  void _exec(TokenMap* scope) const;
 
  public:
   FuncDeclaration() {}
   FuncDeclaration(const char* code, const char** rest = 0,
-               const Scope& parent_scope = Scope::empty) {
+               TokenMap* parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   virtual Statement* clone() const {

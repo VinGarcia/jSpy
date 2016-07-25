@@ -11,7 +11,7 @@ void PREPARE_ENVIRONMENT() {
 TEST_CASE("Build and evaluate BlockStatements") {
   const char* rest = 0;
   const char* code_text = "{ a = 2; b = 3; c = a+b; }End";
-  TokenMap_t map;
+  TokenMap map;
 
   BlockStatement code(code_text, &rest);
   REQUIRE_NOTHROW(code.exec(&map));
@@ -34,7 +34,7 @@ TEST_CASE("Build and evaluate BlockStatements") {
 TEST_CASE("Build and evaluate IfStatements") {
   const char* rest = 0;
   const char* code_text = "if \n ((a+b)*2 == 6) {\n  a = a + 1; c = True;\n} else \n c = False;End";
-  TokenMap_t map;
+  TokenMap map;
   map["a"] = 1;
   map["b"] = 2;
 
@@ -67,7 +67,7 @@ TEST_CASE("Build and evaluate IfStatements") {
 TEST_CASE("Build and evaluate ForStatements") {
   const char* rest = 0;
   const char* code_text = "for \n (n in range(3)) {\n b=a; a = a + 1; }End(); \n c = False;";
-  TokenMap_t map;
+  TokenMap map;
   ForStatement code;
   map["a"] = 1;
 
@@ -107,7 +107,7 @@ TEST_CASE("Code block with for and if statements", "[BlockStatement]") {
     "}";
 
   const char* rest = 0;
-  TokenMap_t map;
+  TokenMap map;
   BlockStatement code;
 
   REQUIRE_NOTHROW(code.compile(factorial_code, &rest));
@@ -120,7 +120,7 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   const char* rest = 0;
   const char* code_text = "function my_sum (num1, num2) { return = num1 + num2 }End();";
   FuncDeclaration decl;
-  TokenMap_t map;
+  TokenMap map;
 
   REQUIRE_NOTHROW(decl.compile(code_text+8, &rest, &map));
   REQUIRE_NOTHROW(decl.exec(&map));
