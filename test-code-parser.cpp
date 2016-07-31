@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 #include "shunting-yard.h"
-#include "code-parser.h"
+#include "statements.h"
 
 void PREPARE_ENVIRONMENT() {
 

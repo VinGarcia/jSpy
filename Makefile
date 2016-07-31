@@ -1,6 +1,6 @@
 EXE = test-code-parser
 CATCH = catch
-SRC = code-parser.cpp range.cpp
+SRC = statements.cpp range.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX    =  g++
