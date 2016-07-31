@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
   std::string line;
   const char* rest;
   BlockStatement code;
-  TokenMap map;
+  GlobalScope map;
 
   std::cout << "\nJSpy 0.1a by Vinícius Garcia" << std::endl;
 

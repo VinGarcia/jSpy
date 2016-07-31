@@ -2,37 +2,38 @@
 
 #include "./generators.h"
 
-class Range : public Iterator {
-  long from, to, step, i;
+class Range::RangeIterator : public Iterator {
+  int64_t from, to, step, i;
+  packToken last;
 
  public:
-  Range(long from, long to, long step) : from(from), to(to), step(step), i(from) {
-    this->type = IT;
-  }
+  RangeIterator(int64_t from, int64_t to, int64_t step)
+                : from(from), to(to), step(step), i(from) {}
 
   packToken* next() {
-    long value = i;
+    int64_t value = i;
     if ((step > 0 && value >= to) || (step < 0 && value <= to)) {
       i = from;
       return NULL;
     } else {
       i += step;
-      return new packToken((double)value);
+      last = static_cast<double>(value);
+      return &last;
     }
   }
 
-  void reset() {
-    i=from;
-  }
-
-  virtual TokenBase* clone() const {
-    return new Range(static_cast<const Range&>(*this));
-  }
+  void reset() { i=from; }
 };
 
+Iterator* Range::getIterator() {
+  return new RangeIterator(from, to, step);
+}
+
+/* * * * * Built-in range function: * * * * */
+
 const char* range_args[] = {"from", "to", "step"};
-packToken default_range(TokenMap* scope) {
-  long to, step, from;
+packToken default_range(packMap scope) {
+  int64_t to, step, from;
 
   packToken* p_from = scope->find("from");
   packToken* p_to = scope->find("to");
@@ -41,7 +42,7 @@ packToken default_range(TokenMap* scope) {
   if ((*p_from)->type == NUM) {
     from = p_from->asDouble();
   } else if ((*p_from)->type == NONE) {
-    throw std::invalid_argument("range() expects at least the first argument!");
+    throw std::invalid_argument("range() expects at least 1 argument!");
   } else {
     throw std::invalid_argument("range() expects only numbers!");
   }
@@ -64,14 +65,15 @@ packToken default_range(TokenMap* scope) {
     throw std::invalid_argument("range() expects only numbers!");
   }
 
-  return Range(from, to, step);
+  return packToken(new Token<Range>(Range(from, to, step), IT));
 }
 
-/* * * * * Iterator Startup class * * * * */
+/* * * * * Range Startup class * * * * */
 
-struct Iterator::Startup {
+struct Range::Startup {
   Startup() {
     TokenMap& global = TokenMap::default_global();
-    global["range"] = CppFunction(default_range, 3, range_args);
+    global["range"] = CppFunction(default_range, 3, range_args, "range");
+    global["global"] = packMap(&global);
   }
 } iterator_startup;

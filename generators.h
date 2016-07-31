@@ -6,21 +6,15 @@
 #include "./exp-parser/shunting-yard.h"
 #include "./code-parser.h"
 
-// These are token numbers used to extend
-// The default Token types of the calculator class.
-//
-// They should all have the format 0x2#
-// Where # is an optional number between 0 and f
-//
-// This way they won't colide with the original types.
-enum newTokTypes { IT = 0x20 };
-
-class Iterator : public TokenBase {
+class Range : public Iterable {
+ private:
   struct Startup;
+  struct RangeIterator;
 
  public:
-  virtual packToken* next() = 0;
-  virtual void reset() = 0;
+  int64_t from, to, step;
+  Range(int64_t f, int64_t t, int64_t s) : from(f), to(t), step(s) {}
+  Iterator* getIterator();
 };
 
 class UserFunction : public Function {
@@ -31,8 +25,8 @@ class UserFunction : public Function {
   UserFunction(argsList args, BlockStatement body, std::string name = "")
                : _args(args), body(body) { this->name = name; }
 
-  virtual const argsList args() const { return _args; };
-  virtual packToken exec(TokenMap* scope) const {
+  virtual const argsList args() const { return _args; }
+  virtual packToken exec(packMap scope) const {
     returnState st;
     st = body.exec(scope);
     if (st.type == RETURN) {
@@ -46,11 +40,5 @@ class UserFunction : public Function {
     return new UserFunction(static_cast<const UserFunction&>(*this));
   }
 };
-
-
-// class Generator : public Iterator {
-//   TokenMap local;
-
-// };
 
 #endif  // GENERATORS_H_
