@@ -26,10 +26,20 @@ packToken default_new(packMap scope) {
   return instance;
 }
 
+const char* one_arg[] = {"value"};
+packToken default_rpn(packMap scope) {
+  std::string code = scope->find("value")->asString();
+
+  calculator c(code.c_str(), scope);
+
+  return c.str();
+}
+
 struct GlobalStartup {
   GlobalStartup() {
     TokenMap& global = TokenMap::default_global();
     global["global"] = packMap(&global);
     global["new"] = CppFunction(&default_new, 1, new_args, "new");
+    global["rpn"] = CppFunction(&default_rpn, 1, one_arg, "rpn");
   }
 } global_startup;

@@ -169,3 +169,10 @@ TEST_CASE("Test usage of the `new` function") {
   REQUIRE_NOTHROW(b.exec(&vars));
   REQUIRE(vars["b"]["value"] == 10);
 }
+
+// The toRPN function is to be used as a debug tool.
+TEST_CASE("Test usage of `toRPN` function") {
+  GlobalScope vars;
+  REQUIRE_NOTHROW(calculator::calculate("str = rpn('a=2')", &vars));
+  REQUIRE(vars["str"].asString() == "calculator { RPN: [ a, 2, = ] }");
+}
