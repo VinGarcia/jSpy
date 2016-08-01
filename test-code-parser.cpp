@@ -151,3 +151,21 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   REQUIRE(calculator::calculate(" my_sum(0,4) ", &map).asDouble() == 4);
   REQUIRE(map["n1"].asDouble() == 0);
 }
+
+TEST_CASE("Test usage of the `new` function") {
+  GlobalScope vars;
+  const char* code =
+    "{"
+    "  a = map();"
+    "  function init(a) {"
+    "    this.value = a;"
+    "  }"
+    "  a.__init__ = init;"
+    "  "
+    "  b = new(a,10);"
+    "}";
+  BlockStatement b;
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(&vars));
+  REQUIRE(vars["b"]["value"] == 10);
+}
