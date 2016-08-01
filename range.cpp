@@ -74,6 +74,5 @@ struct Range::Startup {
   Startup() {
     TokenMap& global = TokenMap::default_global();
     global["range"] = CppFunction(default_range, 3, range_args, "range");
-    global["global"] = packMap(&global);
   }
 } iterator_startup;

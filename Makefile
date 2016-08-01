@@ -1,6 +1,6 @@
 EXE = test-code-parser
 CATCH = catch
-SRC = statements.cpp range.cpp
+SRC = statements.cpp range.cpp global-setup.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX    =  g++
