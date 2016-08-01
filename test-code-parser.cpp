@@ -152,6 +152,37 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   REQUIRE(map["n1"].asDouble() == 0);
 }
 
+// The toRPN function is to be used as a debug tool.
+TEST_CASE("Test built-in functions and classes") {
+  GlobalScope vars;
+  REQUIRE_NOTHROW(calculator::calculate("str = rpn('a=2')", &vars));
+  REQUIRE(vars["str"].asString() == "calculator { RPN: [ a, 2, = ] }");
+
+  const char* code =
+  "{"
+  "  L = list();"
+  "  function F(val) {"
+  "    for(arg in arglist)"
+  "      L.push(arg);"
+  "    return val;"
+  "  }"
+  "  lazy = new(Lazy, F, 'v1', 'v2');"
+  "}";
+
+  BlockStatement b;
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(&vars));
+
+  REQUIRE(calculator::calculate("lazy.exec()", &vars).asString() == "v1");
+  REQUIRE(vars["L"].asList()->list.size() == 1);
+  REQUIRE(vars["L"].str() == "[ \"v2\" ]");
+
+  REQUIRE_NOTHROW(calculator::calculate("L = list()", &vars));
+  REQUIRE(calculator::calculate("lazy.exec('+', 2)", &vars).asString() == "v1");
+  REQUIRE(vars["L"].asList()->list.size() == 3);
+  REQUIRE(vars["L"].str() == "[ \"v2\", \"+\", 2 ]");
+}
+
 TEST_CASE("Test usage of the `new` function") {
   GlobalScope vars;
   const char* code =
@@ -168,11 +199,4 @@ TEST_CASE("Test usage of the `new` function") {
   REQUIRE_NOTHROW(b.compile(code));
   REQUIRE_NOTHROW(b.exec(&vars));
   REQUIRE(vars["b"]["value"] == 10);
-}
-
-// The toRPN function is to be used as a debug tool.
-TEST_CASE("Test usage of `toRPN` function") {
-  GlobalScope vars;
-  REQUIRE_NOTHROW(calculator::calculate("str = rpn('a=2')", &vars));
-  REQUIRE(vars["str"].asString() == "calculator { RPN: [ a, 2, = ] }");
 }
