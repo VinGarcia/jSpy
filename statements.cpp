@@ -6,6 +6,7 @@
 #include "./statements.h"
 #include "./range.h"
 #include "./exp-parser/shunting-yard-exceptions.h"
+#include "./matcher.h"
 
 /* * * * * IfStatement Class * * * * */
 
@@ -191,7 +192,7 @@ returnState ExpStatement::_exec(packMap scope) const {
   return NORMAL;
 }
 
-/* * * * * ExpStatement Class * * * * */
+/* * * * * ReturnStatement Class * * * * */
 
 void ReturnStatement::_compile(const char* code, const char** rest,
                             packMap parent_scope) {
@@ -204,6 +205,21 @@ void ReturnStatement::_compile(const char* code, const char** rest,
 
 returnState ReturnStatement::_exec(packMap scope) const {
   return returnState(RETURN, expr.eval(scope));
+}
+
+/* * * * * YieldStatement Class * * * * */
+
+void YieldStatement::_compile(const char* code, const char** rest,
+                            packMap parent_scope) {
+  expr.compile(code, parent_scope, ";}\n", &code);
+
+  if (*code && *code != '}') ++code;
+
+  if (rest) *rest = code;
+}
+
+returnState YieldStatement::_exec(packMap scope) const {
+  return returnState(YIELD, expr.eval(scope));
 }
 
 /* * * * * FuncDeclaration Statement * * * * */
@@ -313,6 +329,13 @@ Statement* buildStatement(const char** source, packMap scope) {
   switch (*code) {
   case '{':
     return new BlockStatement(code, source, scope);
+  case 'm':
+    _template = "matcher";
+    for (i = 1; i < 7; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 7 && !(isalnum(code[i]) || code[i] == '_'))
+      return new MatcherDeclaration(code+7, source, scope);
   case 'r':
     _template = "return";
     for (i = 1; i < 6; ++i)
@@ -320,6 +343,15 @@ Statement* buildStatement(const char** source, packMap scope) {
 
     if (i == 6 && !(isalnum(code[i]) || code[i] == '_'))
       return new ReturnStatement(code+6, source, scope);
+    
+    break;
+  case 'y':
+    _template = "yield";
+    for (i = 1; i < 5; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
+      return new YieldStatement(code+5, source, scope);
     
     break;
   case 'i':
@@ -419,6 +451,7 @@ returnState BlockStatement::_exec(packMap scope) const {
   for(const auto stmt : list) {
     rs = stmt->exec(scope);
     if (rs.type == RETURN) return rs;
+    if (rs.type == YIELD) return rs;
   }
 
   return NORMAL;

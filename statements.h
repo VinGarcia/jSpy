@@ -7,7 +7,7 @@ typedef unsigned uint;
 
 #include "shunting-yard.h"
 
-enum returnType { NORMAL, RETURN };
+enum returnType { NORMAL, RETURN, YIELD };
 
 struct returnState {
   uint8_t type;
@@ -50,8 +50,12 @@ class BlockStatement : public Statement {
  public:
   BlockStatement() {}
   BlockStatement(const char* code, const char** rest = 0,
-            packMap parent_scope = &TokenMap::empty) {
+                 packMap parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
+  }
+  BlockStatement(const char* code,
+                 packMap parent_scope = &TokenMap::empty) {
+    _compile(code, 0, parent_scope);
   }
   BlockStatement(const BlockStatement& other);
   ~BlockStatement();
@@ -171,11 +175,29 @@ class ReturnStatement : public Statement {
  public:
   ReturnStatement() {}
   ReturnStatement(const char* code, const char** rest = 0,
-               packMap parent_scope = &TokenMap::empty) {
+                  packMap parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   virtual Statement* clone() const {
     return new ReturnStatement(*this);
+  }
+};
+
+class YieldStatement : public Statement {
+  calculator expr;
+
+ private:
+  void _compile(const char* code, const char** rest, packMap parent_scope);
+  returnState _exec(packMap scope) const;
+
+ public:
+  YieldStatement() {}
+  YieldStatement(const char* code, const char** rest = 0,
+                 packMap parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new YieldStatement(*this);
   }
 };
 
