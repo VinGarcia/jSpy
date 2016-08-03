@@ -188,7 +188,7 @@ struct MatchIterator : public Iterator {
   packMap scope;
 
   packToken last;
-  bool more;
+  bool more, match;
 
   MatchIterator(pMatch::arrayClass expr, std::string text,
                 packMap scope = &TokenMap::empty)
@@ -197,7 +197,7 @@ struct MatchIterator : public Iterator {
   }
 
   packToken* next() {
-    if (this->more) {
+    if (match && this->more) {
       bool more = false;
       last = traverse(expr.var, &more);
       this->more = more;
@@ -210,7 +210,7 @@ struct MatchIterator : public Iterator {
 
   void reset() {
     this->more = true;
-    expr.match(text, 0, true);
+    match = expr.match(text, 0, true);
   }
 
   // The traverse will build an object with one of the
@@ -225,6 +225,10 @@ struct MatchIterator : public Iterator {
 
     // Create a new empty object:
     packMap obj = scope->getChild();
+
+    if (var.lInt.size() == 0) {
+      return obj;
+    }
 
     // Get the first interpretation:
     tInterpretacao tInt = var.lInt.front();

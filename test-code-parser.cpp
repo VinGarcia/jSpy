@@ -329,4 +329,20 @@ TEST_CASE("Test Matcher built-in class execution") {
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", &vars));
   REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
+
+  // Test what happens when no match is found:
+  vars["a"] = true;
+  code = "matcher M3 {\n  \"pattern\" { yield 10 }\n}End()";
+  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
+  REQUIRE_NOTHROW(m.exec(&vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", &vars));
+  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 0);
+  REQUIRE(vars["results"].str() == "[]");
+
+  code = "matcher M3 {\n  \"pattern\" if (False) { yield 10 }\n}End()";
+  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
+  REQUIRE_NOTHROW(m.exec(&vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", &vars));
+  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 0);
+  REQUIRE(vars["results"].str() == "[]");
 }
