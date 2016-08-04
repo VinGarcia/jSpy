@@ -1,9 +1,7 @@
 #include <iostream>
 #include <string>
-#include <iostream>
-
 #include <fstream>
-#include <streambuf>
+#include <sstream>
 
 #include "statements.h"
 
@@ -36,9 +34,10 @@ int main(int argc, char* argv[]) {
     }
   } else if (argc == 2) {
     std::ifstream t(argv[1]);
-    std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+    std::stringstream ss;
+    ss << t.rdbuf();
 
-    std::string code = "{" + str + "}";
+    std::string code = "{" + ss.str() + "}";
     BlockStatement b(code.c_str(), &map);
     b.exec(&map);
   } else {
