@@ -10,7 +10,7 @@ protypical inheritance, and function closures.
 [python-zen]: https://www.python.org/dev/peps/pep-0020/
 
 The jSpy language was created as a way to provide support to a new Speech
-Parser technique developed by VinGarcia originally called `Talkin`. This
+Parser tool developed by VinGarcia originally called `Talkin`. This
 Parser is built-in into the language and can be accessed by using the
 reserved word `matcher` (See the examples section).
 
