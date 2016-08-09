@@ -226,6 +226,13 @@ TEST_CASE("Test Hook parser class") {
   REQUIRE_NOTHROW(h.body.exec(&vars));
   REQUIRE(vars["resp"].asDouble() == 43);
 
+  code = "\"pattern\";End() ";
+  REQUIRE_NOTHROW(h.compile(code, &code, &vars));
+  REQUIRE(*code == 'E');
+
+  REQUIRE(h.expr.str() == "\"pattern\"");
+  REQUIRE(h.cond.eval(&vars).asBool() == true);
+  REQUIRE_NOTHROW(h.body.exec(&vars));
 }
 
 // TODO(VinGarcia): This test causes memory leak from problem in the pattern.cpp file.
@@ -345,4 +352,27 @@ TEST_CASE("Test Matcher built-in class execution") {
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", &vars));
   REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
+}
+
+TEST_CASE("Test Matchers cross reference on patterns") {
+  GlobalScope vars;
+  const char* code =
+    "{"
+    "  matcher program {\n"
+    "    \"firefox\";"
+    "    \"chrome\";"
+    "  }"
+    "  "
+    "  matcher M1 {\n"
+    "    \"open (program)p;\" return 'openning %s' % p\n"
+    "  }"
+    "}";
+  BlockStatement b;
+
+  REQUIRE_NOTHROW(b.compile(code, &code, &vars));
+  REQUIRE_NOTHROW(b.exec(&vars));
+
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('open firefox')", &vars));
+  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 1);
+  REQUIRE(vars["results"].str() == "[ \"openning firefox\" ]");
 }

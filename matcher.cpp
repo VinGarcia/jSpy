@@ -327,7 +327,15 @@ void Hook::compile(const char* code, const char** rest,
     cond.compile("True");
   }
 
-  body.compile(code, rest, parent_scope);
+  while (*code && isspace(*code)) ++code;
+
+  if (*code && *code != ';' && *code != '}') {
+    body.compile(code, &code, parent_scope);
+  } else {
+    if(*code == ';') ++code;
+  }
+
+  if (rest) *rest = code;
 }
 
 Iterator* Hook::getIterator(std::string text, packMap scope) const {
