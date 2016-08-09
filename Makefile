@@ -19,23 +19,26 @@ all: $(EXE)
 
 %.o: %.cpp *.h; $(CXX) $(CFLAGS) -c $<
 
-$(EXE): modules $(OBJ) $(SUB_OBJ) $(CATCH).o
+$(EXE): $(OBJ) $(SUB_OBJ) $(CATCH).o
 	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) $(CATCH).o $(EXE).cpp -o $(EXE)
 
-jspy: modules $(OBJ) $(SUB_OBJ)
+jspy: $(OBJ) $(SUB_OBJ)
 	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) jspy.cpp -o jspy
 
 run: jspy
+	./jspy usage.spy
+
+shell: jspy
 	./jspy
 
 test: $(EXE); ./$(EXE)
 
 check: $(EXE); valgrind ./$(EXE)
 
-modules: $(MODULES)
+$(SUB_OBJ):
 	@echo
-	@echo "Checking submodule $<..."
-	make -s -C $<
+	@echo "Checking submodules..."
+	make -s -C $(foreach $(MODULE))
 	@echo
 
 clean:; rm -f $(EXE) jspy *.o

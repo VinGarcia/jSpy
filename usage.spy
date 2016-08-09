@@ -1,0 +1,13 @@
+
+stuff = False;
+
+matcher M1 {
+  "("[Tt]esting")variable;" {
+    if ( stuff ) { print( 'We are %s' % variable ) 
+    } else {
+      print( 'I am %s' % variable )
+    }
+  }
+}
+
+M1.exec('Testing')
