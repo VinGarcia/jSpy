@@ -38,7 +38,7 @@ check: $(EXE); valgrind ./$(EXE)
 $(SUB_OBJ):
 	@echo
 	@echo "Checking submodules..."
-	make -s -C $(foreach $(MODULE))
+	make -s -C $(foreach m, $(MODULES), $(m))
 	@echo
 
 clean:; rm -f $(EXE) jspy *.o
