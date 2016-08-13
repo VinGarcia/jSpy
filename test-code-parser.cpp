@@ -184,6 +184,32 @@ TEST_CASE("Test built-in functions and classes") {
   REQUIRE(calculator::calculate("lazy.exec('+', 2)", vars).asString() == "v1");
   REQUIRE(vars["L"].asList().list().size() == 3);
   REQUIRE(vars["L"].str() == "[ \"v2\", \"+\", 2 ]");
+
+  code =
+  "{"
+  "  file = open('__test_file__.o', 'w');"
+  "  file.write('hello\\nworld');"
+  "  file.close();"
+  "  "
+  "  file = open('__test_file__.o');"
+  "  lines = file.readlines();"
+  "}";
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+
+  REQUIRE(vars["lines"]->type == IT);
+  Iterator* it = static_cast<Iterator*>(vars["lines"].token());
+  packToken* p;
+  REQUIRE_NOTHROW(p = it->next());
+  REQUIRE(p != 0);
+  REQUIRE(p->asString() == "hello");
+
+  REQUIRE_NOTHROW(p = it->next());
+  REQUIRE(p != 0);
+  REQUIRE(p->asString() == "world");
+
+  REQUIRE_NOTHROW(p = it->next());
+  REQUIRE(p == 0);
 }
 
 TEST_CASE("Test usage of the `new` function") {
