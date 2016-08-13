@@ -11,7 +11,7 @@
 /* * * * * IfStatement Class * * * * */
 
 void IfStatement::_compile(const char* code, const char** rest,
-                           packMap parent_scope) {
+                           TokenMap parent_scope) {
 
   while (isspace(*code)) ++code;
 
@@ -48,7 +48,7 @@ void IfStatement::_compile(const char* code, const char** rest,
   if(rest) *rest = code;
 }
 
-returnState IfStatement::_exec(packMap scope) const {
+returnState IfStatement::_exec(TokenMap scope) const {
   if (cond.eval(scope).asBool()) {
     return _then.exec(scope);
   } else {
@@ -59,7 +59,7 @@ returnState IfStatement::_exec(packMap scope) const {
 /* * * * * ForStatement Class * * * * */
 
 void ForStatement::_compile(const char* code, const char** rest,
-                            packMap parent_scope) {
+                            TokenMap parent_scope) {
   std::stringstream ss;
 
   while (isspace(*code)) ++code;
@@ -107,26 +107,22 @@ void ForStatement::_compile(const char* code, const char** rest,
   }
 }
 
-returnState ForStatement::_exec(packMap scope) const {
+returnState ForStatement::_exec(TokenMap scope) const {
   Iterator* it;
   packToken p_it = it_expr.eval(scope);
 
-  if (p_it->type & IT) {
-    if (p_it->type == MAP) {
-      it = p_it.asMap()->getIterator();
-    } else if (p_it->type == LIST) {
-      it = p_it.asList()->getIterator();
-    } else if (p_it->type == IT) {
-      it = static_cast<Token<Range>*>(p_it.token())->val.getIterator();
-    }
+  if (p_it->type == IT) {
+    it = static_cast<Iterator*>(p_it->clone());
+  } else if (p_it->type & IT) {
+    it = static_cast<Iterable*>(p_it.token())->getIterator();
   } else {
-    throw syntax_error("The evaluated object should be an iterator!");
+    throw syntax_error("The evaluated object should be iterable!");
   }
 
   try {
     returnState rs;
     for (packToken* value = it->next(); value; value = it->next()) {
-      (*scope)[name] = *value;
+      scope[name] = *value;
       rs = body.exec(scope);
 
       if (rs.type == RETURN) return rs;
@@ -143,7 +139,7 @@ returnState ForStatement::_exec(packMap scope) const {
 /* * * * * WhileStatement class * * * * */
 
 void WhileStatement::_compile(const char* code, const char** rest,
-                              packMap parent_scope) {
+                              TokenMap parent_scope) {
   std::stringstream ss;
 
   while (isspace(*code)) ++code;
@@ -164,7 +160,7 @@ void WhileStatement::_compile(const char* code, const char** rest,
   body.compile(code, rest, parent_scope);
 }
 
-returnState WhileStatement::_exec(packMap scope) const {
+returnState WhileStatement::_exec(TokenMap scope) const {
   returnState rs;
   while (cond.eval(scope).asBool() == true) {
     rs = body.exec(scope);
@@ -177,7 +173,7 @@ returnState WhileStatement::_exec(packMap scope) const {
 /* * * * * ExpStatement Class * * * * */
 
 void ExpStatement::_compile(const char* code, const char** rest,
-                            packMap parent_scope) {
+                            TokenMap parent_scope) {
   expr.compile(code, parent_scope, ";}\n", &code);
 
   // Skip the delimiter character:
@@ -186,7 +182,7 @@ void ExpStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-returnState ExpStatement::_exec(packMap scope) const {
+returnState ExpStatement::_exec(TokenMap scope) const {
   expr.eval(scope);
 
   return NORMAL;
@@ -195,7 +191,7 @@ returnState ExpStatement::_exec(packMap scope) const {
 /* * * * * ReturnStatement Class * * * * */
 
 void ReturnStatement::_compile(const char* code, const char** rest,
-                            packMap parent_scope) {
+                               TokenMap parent_scope) {
   expr.compile(code, parent_scope, ";}\n", &code);
 
   if (*code && *code != '}') ++code;
@@ -203,14 +199,14 @@ void ReturnStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-returnState ReturnStatement::_exec(packMap scope) const {
+returnState ReturnStatement::_exec(TokenMap scope) const {
   return returnState(RETURN, expr.eval(scope));
 }
 
 /* * * * * YieldStatement Class * * * * */
 
 void YieldStatement::_compile(const char* code, const char** rest,
-                            packMap parent_scope) {
+                              TokenMap parent_scope) {
   expr.compile(code, parent_scope, ";}\n", &code);
 
   if (*code && *code != '}') ++code;
@@ -218,7 +214,7 @@ void YieldStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-returnState YieldStatement::_exec(packMap scope) const {
+returnState YieldStatement::_exec(TokenMap scope) const {
   return returnState(YIELD, expr.eval(scope));
 }
 
@@ -250,7 +246,7 @@ std::string parseName(const char** source) {
 }
 
 void FuncDeclaration::_compile(const char* code, const char** rest,
-                            packMap parent_scope) {
+                               TokenMap parent_scope) {
   // Make sure its empty:
   args.clear();
 
@@ -312,8 +308,8 @@ void FuncDeclaration::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-returnState FuncDeclaration::_exec(packMap scope) const {
-  (*scope)[name] = packToken(new UserFunction(args, body, name));
+returnState FuncDeclaration::_exec(TokenMap scope) const {
+  scope[name] = packToken(new UserFunction(args, body, name));
 
   return NORMAL;
 }
@@ -321,7 +317,7 @@ returnState FuncDeclaration::_exec(packMap scope) const {
 /* * * * * BlockStatement Class * * * * */
 
 // Decide what type of statement to build:
-Statement* buildStatement(const char** source, packMap scope) {
+Statement* buildStatement(const char** source, TokenMap scope) {
   const char* code = *source;
   const char* _template;
   uint i;
@@ -409,7 +405,7 @@ BlockStatement::~BlockStatement() {
 }
 
 void BlockStatement::_compile(const char* code, const char** rest,
-                              packMap parent_scope) {
+                              TokenMap parent_scope) {
   // Make sure the list is empty:
   cleanList(&list);
 
@@ -446,7 +442,7 @@ void BlockStatement::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-returnState BlockStatement::_exec(packMap scope) const {
+returnState BlockStatement::_exec(TokenMap scope) const {
   returnState rs;
   for(const auto stmt : list) {
     rs = stmt->exec(scope);

@@ -11,13 +11,13 @@ struct Hook {
   calculator cond;
   BlockStatement body;
 
-  void compile(const char* code, const char** rest, packMap parent_scope);
-  Iterator* getIterator(std::string text, packMap = &TokenMap::empty) const;
+  void compile(const char* code, const char** rest, TokenMap parent_scope);
+  Iterator* getIterator(std::string text, TokenMap = &TokenMap::empty) const;
 
  public:
   Hook() {}
   Hook(const char* code, const char** rest = 0,
-                 packMap parent_scope = &TokenMap::empty) {
+       TokenMap parent_scope = &TokenMap::empty) {
     compile(code, rest, parent_scope);
   }
 };
@@ -25,16 +25,16 @@ struct Hook {
 // Its equivalent to the class `banco`
 struct MatcherDeclaration : public Statement {
   std::string name;
-  packList hooks;
+  TokenList hooks;
 
  private:
-  void _compile(const char* code, const char** rest, packMap parent_scope);
-  returnState _exec(packMap scope) const;
+  void _compile(const char* code, const char** rest, TokenMap parent_scope);
+  returnState _exec(TokenMap scope) const;
 
  public:
   MatcherDeclaration() {}
   MatcherDeclaration(const char* code, const char** rest = 0,
-               packMap parent_scope = &TokenMap::empty) {
+               TokenMap parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
   virtual Statement* clone() const {
@@ -43,9 +43,9 @@ struct MatcherDeclaration : public Statement {
 };
 
 struct Matcher : public pMatch::matcher {
-  packList hooks;
+  TokenList hooks;
   Matcher() {}
-  Matcher(packList hooks) : hooks(hooks) {}
+  Matcher(TokenList hooks) : hooks(hooks) {}
   bool match(std::string input, uint pos);
   std::string str() { return ""; }
 };

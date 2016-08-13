@@ -26,8 +26,8 @@ int main(int argc, char* argv[]) {
       if (line[pos] == '\0') continue;
 
       try {
-        code.compile(line.c_str(), &rest, &map);
-        code.exec(&map);
+        code.compile(line.c_str(), &rest, map);
+        code.exec(map);
       } catch(const std::exception& e) {
         std::cout << e.what() << std::endl;
       }
@@ -38,8 +38,8 @@ int main(int argc, char* argv[]) {
     ss << t.rdbuf();
 
     std::string code = "{" + ss.str() + "}";
-    BlockStatement b(code.c_str(), &map);
-    b.exec(&map);
+    BlockStatement b(code.c_str(), map);
+    b.exec(map);
   } else {
     throw std::invalid_argument("Expected a single file name as argument to the interpreter!");
   }

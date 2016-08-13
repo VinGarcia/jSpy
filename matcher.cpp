@@ -28,13 +28,13 @@ TokenMap& Matcher_super_class() {
 
 // The exec function of all matcher objects:
 const char* matcher_args[] = {"text"};
-packToken matcher_exec(packMap scope) {
-  packList list;
-  std::string text = scope->find("text")->asString();
-  packMap _this = scope->find("this")->asMap();
-  packList hooks = (*_this)["hooks"].asList();
+packToken matcher_exec(TokenMap scope) {
+  TokenList list;
+  std::string text = scope.find("text")->asString();
+  TokenMap _this = scope.find("this")->asMap();
+  TokenList hooks = _this["hooks"].asList();
 
-  for (packToken& p_hook : hooks->list) {
+  for (packToken& p_hook : hooks.list()) {
 
     // Extract the hook from the packToken:
     Hook hook = asHook(p_hook);
@@ -51,7 +51,7 @@ packToken matcher_exec(packMap scope) {
       rs = hook.body.exec(map->asMap());
 
       if (rs.type != NORMAL && rs.value->type != NONE) {
-        list->list.push_back(rs.value);
+        list.list().push_back(rs.value);
       }
 
       if (rs.type == RETURN) {
@@ -72,7 +72,7 @@ packToken matcher_exec(packMap scope) {
 struct MatcherStartup {
   MatcherStartup() {
     TokenMap& global = TokenMap::default_global();
-    global["Matcher"] = packMap(&Matcher_super_class());
+    global["Matcher"] = Matcher_super_class();
     TokenMap& matcher_super = Matcher_super_class();
     matcher_super["exec"] = CppFunction(&matcher_exec, 1, matcher_args);
   }
@@ -84,8 +84,8 @@ struct MatcherStartup {
 std::string parseName(const char** source);
 
 void MatcherDeclaration::_compile(const char* code, const char** rest,
-                            packMap parent_scope) {
-  hooks->list.clear();
+                                  TokenMap parent_scope) {
+  hooks.list().clear();
 
   // Find the start of the name:
   while (isspace(*code)) ++code;
@@ -103,7 +103,7 @@ void MatcherDeclaration::_compile(const char* code, const char** rest,
   if (*code == '"') {
     // Add a new hook:
     TokenBase* hook = new Token<Hook>(Hook(code, &code, parent_scope), HOOK);
-    hooks->list.push_back(packToken(hook));
+    hooks.list().push_back(packToken(hook));
 
     if (rest) *rest = code;
     return;
@@ -126,7 +126,7 @@ void MatcherDeclaration::_compile(const char* code, const char** rest,
 
     // Add a new hook:
     TokenBase* hook = new Token<Hook>(Hook(code, &code, parent_scope), HOOK);
-    hooks->list.push_back(packToken(hook));
+    hooks.list().push_back(packToken(hook));
 
     // Find the start of the next pattern:
     while (isspace(*code)) ++code;
@@ -141,14 +141,14 @@ void MatcherDeclaration::_compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-returnState MatcherDeclaration::_exec(packMap scope) const {
+returnState MatcherDeclaration::_exec(TokenMap scope) const {
 
   // Built an instance of the built-in class matcher:
-  packMap instance = TokenMap( &Matcher_super_class() ); 
-  (*instance)["hooks"] = hooks;
+  TokenMap instance = TokenMap( &Matcher_super_class() ); 
+  instance["hooks"] = hooks;
 
   // Add it to the scope:
-  (*scope)[name] = instance;
+  scope[name] = instance;
 
   // Also register the hooks on the objectClass label list:
   pMatch::objectClass::labels[name] = new Matcher(hooks);
@@ -162,7 +162,7 @@ bool Matcher::match(std::string input, uint pos) {
   this->match_word.clear();
 
   bool match;
-  for(packToken& p_hook : hooks->list) {
+  for(packToken& p_hook : hooks.list()) {
     Hook hook = asHook(p_hook);
     match = hook.expr.match(input, pos);
 
@@ -185,13 +185,13 @@ bool Matcher::match(std::string input, uint pos) {
 struct MatchIterator : public Iterator {
   pMatch::arrayClass expr;
   std::string text;
-  packMap scope;
+  TokenMap scope;
 
   packToken last;
   bool more, match;
 
   MatchIterator(pMatch::arrayClass expr, std::string text,
-                packMap scope = &TokenMap::empty)
+                TokenMap scope = &TokenMap::empty)
                 : expr(expr), text(text), scope(scope) {
     reset();
   }
@@ -220,11 +220,11 @@ struct MatchIterator : public Iterator {
   // 
   // If there are more interpretations possible after it returned,
   // the `*p_more` argument will be set to `true`.
-  packMap traverse(pMatch::cVar& var, bool* p_more) {
+  TokenMap traverse(pMatch::cVar& var, bool* p_more) {
     using namespace pMatch;
 
     // Create a new empty object:
-    packMap obj = scope->getChild();
+    TokenMap obj = scope.getChild();
 
     if (var.lInt.size() == 0) {
       return obj;
@@ -241,7 +241,7 @@ struct MatchIterator : public Iterator {
     if (var.lInt.size() > 1) *p_more = true;
 
     // Read the word this variable represents:
-    (*obj)["text"] = tInt.word;
+    obj["text"] = tInt.word;
 
     // For each variable in this interpretation:
     for (cVar sub_var : tInt.var) {
@@ -257,12 +257,12 @@ struct MatchIterator : public Iterator {
         }
 
         // Save it on `obj`:
-        packMap sub_obj = traverse(sub_var, &keep_tInt);
-        if (sub_obj->map.size() == 1) {
+        TokenMap sub_obj = traverse(sub_var, &keep_tInt);
+        if (sub_obj.map().size() == 1) {
           // If its just a string:
-          (*obj)[nome] = (*sub_obj)["text"];
+          obj[nome] = sub_obj["text"];
         } else {
-          (*obj)[nome] = sub_obj;
+          obj[nome] = sub_obj;
         }
       }
     }
@@ -280,12 +280,16 @@ struct MatchIterator : public Iterator {
 
     return obj;
   }
+
+  TokenBase* clone() const {
+    return new MatchIterator(*this);
+  }
 };
 
 /* * * * * Hook Parser * * * * */
 
 void Hook::compile(const char* code, const char** rest,
-                   packMap parent_scope) {
+                   TokenMap parent_scope) {
   // Find the start of the expression:
   while (isspace(*code)) ++code;
 
@@ -338,7 +342,7 @@ void Hook::compile(const char* code, const char** rest,
   if (rest) *rest = code;
 }
 
-Iterator* Hook::getIterator(std::string text, packMap scope) const {
+Iterator* Hook::getIterator(std::string text, TokenMap scope) const {
   return new MatchIterator(expr, text, scope);
 }
 

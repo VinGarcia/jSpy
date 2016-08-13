@@ -15,7 +15,7 @@ TEST_CASE("Build and evaluate BlockStatements") {
   TokenMap map;
 
   BlockStatement code(code_text, &rest);
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["a"].asDouble() == 2);
   REQUIRE(map["b"].asDouble() == 3);
   REQUIRE(map["c"].asDouble() == 5);
@@ -24,7 +24,7 @@ TEST_CASE("Build and evaluate BlockStatements") {
 
   code_text = "  c = a*2 + 2\n  b = 4;";
   REQUIRE_NOTHROW(code.compile(code_text, &rest));
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asDouble() == 6);
   REQUIRE(map["b"].asDouble() == 3);
   REQUIRE(rest == &(code_text[14]));
@@ -45,23 +45,23 @@ TEST_CASE("Build and evaluate IfStatements") {
   REQUIRE(*rest == 'E');
 
   // Test if it will execute the `then` block:
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asBool() == true);
   REQUIRE(map["a"].asDouble() == 2);
 
   // Test if it will execute the `else` block:
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asBool() == false);
 
   code_text = "if((a+b)*2 == 6) c = True";
   REQUIRE_NOTHROW(code.compile(code_text+2, &rest));
   REQUIRE(*rest == '\0');
 
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asBool() == false);
 
   map["a"] = 1;
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asBool() == true);
 }
 
@@ -76,7 +76,7 @@ TEST_CASE("Build and evaluate ForStatements") {
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
 
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["a"].asDouble() == 4);
   REQUIRE(map["b"].asDouble() == 3);
   REQUIRE(map["n"].asDouble() == 2);
@@ -86,10 +86,10 @@ TEST_CASE("Build and evaluate ForStatements") {
   REQUIRE_NOTHROW(code.compile(code_text+3, &rest));
   REQUIRE(*rest == 'E');
 
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asDouble() == 6);
 
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asDouble() == 12);
 }
 
@@ -104,7 +104,7 @@ TEST_CASE("Build and evaluate WhileStatements") {
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
   
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["n"].asDouble() == 10);
   REQUIRE(map["b"].asDouble() == 9);
 }
@@ -127,7 +127,7 @@ TEST_CASE("Code block with for and if statements", "[BlockStatement]") {
   BlockStatement code;
 
   REQUIRE_NOTHROW(code.compile(factorial_code, &rest));
-  REQUIRE_NOTHROW(code.exec(&map));
+  REQUIRE_NOTHROW(code.exec(map));
 
   REQUIRE(map["result"].asDouble() == 120);
 }
@@ -138,32 +138,34 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   FuncDeclaration decl;
   TokenMap map;
 
-  REQUIRE_NOTHROW(decl.compile(code_text+8, &rest, &map));
-  REQUIRE_NOTHROW(decl.exec(&map));
+  REQUIRE_NOTHROW(decl.compile(code_text+8, &rest, map));
+  REQUIRE_NOTHROW(decl.exec(map));
   REQUIRE(map["my_sum"].str() == "[Function: my_sum]");
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
 
   map["n1"] = packToken::None;
-  REQUIRE(calculator::calculate("my_sum(3,4) ", &map).asDouble() == 7);
+  REQUIRE(calculator::calculate("my_sum(3,4) ", map).asDouble() == 7);
   REQUIRE(map["n1"].asDouble() == 3);
-  REQUIRE(calculator::calculate(" my_sum(1,1) ", &map).asDouble() == 2);
+  REQUIRE(calculator::calculate(" my_sum(1,1) ", map).asDouble() == 2);
   REQUIRE(map["n1"].asDouble() == 1);
-  REQUIRE(calculator::calculate(" my_sum(0,4) ", &map).asDouble() == 4);
+  REQUIRE(calculator::calculate(" my_sum(0,4) ", map).asDouble() == 4);
   REQUIRE(map["n1"].asDouble() == 0);
 }
 
 // The toRPN function is to be used as a debug tool.
 TEST_CASE("Test built-in functions and classes") {
   GlobalScope vars;
-  REQUIRE_NOTHROW(calculator::calculate("str = rpn('a=2')", &vars));
+  REQUIRE_NOTHROW(calculator::calculate("str = rpn('a=2')", vars));
+  // calculator c("str = rpn('a=2')", vars);
+
   REQUIRE(vars["str"].asString() == "calculator { RPN: [ a, 2, = ] }");
 
   const char* code =
   "{"
   "  L = list();"
   "  function F(val) {"
-  "    for(arg in arglist)"
+  "    for(arg in args)"
   "      L.push(arg);"
   "    return val;"
   "  }"
@@ -172,15 +174,15 @@ TEST_CASE("Test built-in functions and classes") {
 
   BlockStatement b;
   REQUIRE_NOTHROW(b.compile(code));
-  REQUIRE_NOTHROW(b.exec(&vars));
+  REQUIRE_NOTHROW(b.exec(vars));
 
-  REQUIRE(calculator::calculate("lazy.exec()", &vars).asString() == "v1");
-  REQUIRE(vars["L"].asList()->list.size() == 1);
+  REQUIRE(calculator::calculate("lazy.exec()", vars).asString() == "v1");
+  REQUIRE(vars["L"].asList().list().size() == 1);
   REQUIRE(vars["L"].str() == "[ \"v2\" ]");
 
-  REQUIRE_NOTHROW(calculator::calculate("L = list()", &vars));
-  REQUIRE(calculator::calculate("lazy.exec('+', 2)", &vars).asString() == "v1");
-  REQUIRE(vars["L"].asList()->list.size() == 3);
+  REQUIRE_NOTHROW(calculator::calculate("L = list()", vars));
+  REQUIRE(calculator::calculate("lazy.exec('+', 2)", vars).asString() == "v1");
+  REQUIRE(vars["L"].asList().list().size() == 3);
   REQUIRE(vars["L"].str() == "[ \"v2\", \"+\", 2 ]");
 }
 
@@ -198,7 +200,7 @@ TEST_CASE("Test usage of the `new` function") {
     "}";
   BlockStatement b;
   REQUIRE_NOTHROW(b.compile(code));
-  REQUIRE_NOTHROW(b.exec(&vars));
+  REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["b"]["value"] == 10);
 }
 
@@ -209,30 +211,30 @@ TEST_CASE("Test Hook parser class") {
   const char* code = "  \"pattern\" if ( a == 3 ) { resp = 42; }End(); ";
   Hook h;
 
-  REQUIRE_NOTHROW(h.compile(code, &code, &vars));
+  REQUIRE_NOTHROW(h.compile(code, &code, vars));
   REQUIRE(*code == 'E');
 
   REQUIRE(h.expr.str() == "\"pattern\"");
-  REQUIRE(h.cond.eval(&vars).asBool() == false);
-  REQUIRE_NOTHROW(h.body.exec(&vars));
+  REQUIRE(h.cond.eval(vars).asBool() == false);
+  REQUIRE_NOTHROW(h.body.exec(vars));
   REQUIRE(vars["resp"].asDouble() == 42);
 
   code = "  \"pattern\"{ resp = 43; }End(); ";
-  REQUIRE_NOTHROW(h.compile(code, &code, &vars));
+  REQUIRE_NOTHROW(h.compile(code, &code, vars));
   REQUIRE(*code == 'E');
 
   REQUIRE(h.expr.str() == "\"pattern\"");
-  REQUIRE(h.cond.eval(&vars).asBool() == true);
-  REQUIRE_NOTHROW(h.body.exec(&vars));
+  REQUIRE(h.cond.eval(vars).asBool() == true);
+  REQUIRE_NOTHROW(h.body.exec(vars));
   REQUIRE(vars["resp"].asDouble() == 43);
 
   code = "\"pattern\";End() ";
-  REQUIRE_NOTHROW(h.compile(code, &code, &vars));
+  REQUIRE_NOTHROW(h.compile(code, &code, vars));
   REQUIRE(*code == 'E');
 
   REQUIRE(h.expr.str() == "\"pattern\"");
-  REQUIRE(h.cond.eval(&vars).asBool() == true);
-  REQUIRE_NOTHROW(h.body.exec(&vars));
+  REQUIRE(h.cond.eval(vars).asBool() == true);
+  REQUIRE_NOTHROW(h.body.exec(vars));
 }
 
 // TODO(VinGarcia): This test causes memory leak from problem in the pattern.cpp file.
@@ -245,13 +247,13 @@ TEST_CASE("Testing the getIterator and traverse function") {
   Hook h;
   Iterator* it;
 
-  REQUIRE_NOTHROW(h.compile(code, &code, &vars));
+  REQUIRE_NOTHROW(h.compile(code, &code, vars));
   REQUIRE_NOTHROW(it = h.getIterator("pattern"));
   REQUIRE(it->next()->str() == "{ \"text\": \"pattern\" }");
   REQUIRE(it->next() == NULL);
 
   code = "  \"my (\"foo\", \"foo\")b;\" if ( a == 3 ) { resp = 42; }End(); ";
-  REQUIRE_NOTHROW(h.compile(code, &code, &vars));
+  REQUIRE_NOTHROW(h.compile(code, &code, vars));
   REQUIRE_NOTHROW(it = h.getIterator("my foo"));
   // TODO(VinGarcia): The map is alphanumerically ordered as are all std::maps.
   // maybe we wanted to make it to print in insertion order as does Javascript?
@@ -266,10 +268,10 @@ TEST_CASE("Test MatcherDeclaration class") {
   const char* code = "matcher name \"pattern\" if ( a == 3 ) { resp = 42 }End();";
   MatcherDeclaration m;
 
-  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE(*code == 'E');
   REQUIRE(m.name == "name");
-  REQUIRE(m.hooks->list.size() == 1);
+  REQUIRE(m.hooks.list().size() == 1);
 
   code =
     "matcher name2 {\n"
@@ -277,10 +279,10 @@ TEST_CASE("Test MatcherDeclaration class") {
     "  \"p2\" { resp = 10 }\n"
     "}End()";
 
-  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE(*code == 'E');
   REQUIRE(m.name == "name2");
-  REQUIRE(m.hooks->list.size() == 2);
+  REQUIRE(m.hooks.list().size() == 2);
 }
 
 TEST_CASE("Test MatcherDeclaration class execution") {
@@ -292,12 +294,12 @@ TEST_CASE("Test MatcherDeclaration class execution") {
     "}End()";
   MatcherDeclaration m;
 
-  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE(*code == 'E');
 
-  REQUIRE_NOTHROW(m.exec(&vars));
-  REQUIRE(calculator::calculate("name2.instanceof(Matcher)", &vars).asBool() == true);
-  REQUIRE(calculator::calculate("name2.hooks.len()", &vars).asDouble() == 2);
+  REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE(calculator::calculate("name2.instanceof(Matcher)", vars).asBool() == true);
+  REQUIRE(calculator::calculate("name2.hooks.len()", vars).asDouble() == 2);
 }
 
 TEST_CASE("Test Matcher built-in class execution") {
@@ -309,48 +311,48 @@ TEST_CASE("Test Matcher built-in class execution") {
     "}End()";
   MatcherDeclaration m;
 
-  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE(*code == 'E');
 
-  REQUIRE_NOTHROW(m.exec(&vars));
-  REQUIRE(calculator::calculate("M1.instanceof(Matcher)", &vars).asBool() == true);
-  REQUIRE(calculator::calculate("M1.hooks.len()", &vars).asDouble() == 2);
+  REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE(calculator::calculate("M1.instanceof(Matcher)", vars).asBool() == true);
+  REQUIRE(calculator::calculate("M1.hooks.len()", vars).asDouble() == 2);
 
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = true;
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", &vars));
-  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 2);
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 2);
   REQUIRE(vars["results"].str() == "[ 42, 10 ]");
 
   vars["a"] = true;
   vars["b"] = false;
   vars["not_sure"] = true;
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", &vars));
-  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 1);
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = false;
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", &vars));
-  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 1);
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
   // Test what happens when no match is found:
   vars["a"] = true;
   code = "matcher M3 {\n  \"pattern\" { yield 10 }\n}End()";
-  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
-  REQUIRE_NOTHROW(m.exec(&vars));
-  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", &vars));
-  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 0);
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
+  REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
 
   code = "matcher M3 {\n  \"pattern\" if (False) { yield 10 }\n}End()";
-  REQUIRE_NOTHROW(m.compile(code+7, &code, &vars));
-  REQUIRE_NOTHROW(m.exec(&vars));
-  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", &vars));
-  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 0);
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
+  REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
 }
 
@@ -369,10 +371,10 @@ TEST_CASE("Test Matchers cross reference on patterns") {
     "}";
   BlockStatement b;
 
-  REQUIRE_NOTHROW(b.compile(code, &code, &vars));
-  REQUIRE_NOTHROW(b.exec(&vars));
+  REQUIRE_NOTHROW(b.compile(code, &code, vars));
+  REQUIRE_NOTHROW(b.exec(vars));
 
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('open firefox')", &vars));
-  REQUIRE(calculator::calculate("results.len()", &vars).asDouble() == 1);
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('open firefox')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
   REQUIRE(vars["results"].str() == "[ \"openning firefox\" ]");
 }

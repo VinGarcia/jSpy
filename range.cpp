@@ -2,15 +2,7 @@
 
 #include "./range.h"
 
-class Range::RangeIterator : public Iterator {
-  int64_t from, to, step, i;
-  packToken last;
-
- public:
-  RangeIterator(int64_t from, int64_t to, int64_t step)
-                : from(from), to(to), step(step), i(from) {}
-
-  packToken* next() {
+packToken* Range::next() {
     int64_t value = i;
     if ((step > 0 && value >= to) || (step < 0 && value <= to)) {
       i = from;
@@ -22,22 +14,17 @@ class Range::RangeIterator : public Iterator {
     }
   }
 
-  void reset() { i=from; }
-};
-
-Iterator* Range::getIterator() {
-  return new RangeIterator(from, to, step);
-}
+void Range::reset() { i=from; }
 
 /* * * * * Built-in range function: * * * * */
 
 const char* range_args[] = {"from", "to", "step"};
-packToken default_range(packMap scope) {
+packToken default_range(TokenMap scope) {
   int64_t to, step, from;
 
-  packToken* p_from = scope->find("from");
-  packToken* p_to = scope->find("to");
-  packToken* p_step = scope->find("step");
+  packToken* p_from = scope.find("from");
+  packToken* p_to = scope.find("to");
+  packToken* p_step = scope.find("step");
 
   if ((*p_from)->type == NUM) {
     from = p_from->asDouble();
@@ -65,7 +52,7 @@ packToken default_range(packMap scope) {
     throw std::invalid_argument("range() expects only numbers!");
   }
 
-  return packToken(new Token<Range>(Range(from, to, step), IT));
+  return packToken(new Range(from, to, step));
 }
 
 /* * * * * Range Startup class * * * * */

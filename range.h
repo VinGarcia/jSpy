@@ -6,15 +6,26 @@
 #include "./exp-parser/shunting-yard.h"
 #include "./statements.h"
 
-class Range : public Iterable {
+class Range : public Iterator {
  private:
   struct Startup;
   struct RangeIterator;
 
  public:
-  int64_t from, to, step;
-  Range(int64_t f, int64_t t, int64_t s) : from(f), to(t), step(s) {}
-  Iterator* getIterator();
+  int64_t from, to, step, i;
+  packToken last;
+
+ public:
+  Range(int64_t f, int64_t t, int64_t s) : from(f), to(t), step(s), i(f) {}
+
+ public:
+  packToken* next();
+  void reset();
+
+ public:
+  virtual TokenBase* clone() const {
+    return new Range(*this);
+  }
 };
 
 class UserFunction : public Function {
@@ -26,7 +37,7 @@ class UserFunction : public Function {
                : _args(args), body(body) { this->name = name; }
 
   virtual const argsList args() const { return _args; }
-  virtual packToken exec(packMap scope) const {
+  virtual packToken exec(TokenMap scope) const {
     returnState st;
     st = body.exec(scope);
     if (st.type == RETURN) {
