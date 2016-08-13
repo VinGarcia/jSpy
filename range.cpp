@@ -26,8 +26,8 @@ packToken default_range(TokenMap scope) {
   packToken* p_to = scope.find("to");
   packToken* p_step = scope.find("step");
 
-  if ((*p_from)->type == NUM) {
-    from = p_from->asDouble();
+  if ((*p_from)->type & NUM) {
+    from = p_from->asInt();
   } else if ((*p_from)->type == NONE) {
     throw std::invalid_argument("range() expects at least 1 argument!");
   } else {
@@ -38,11 +38,11 @@ packToken default_range(TokenMap scope) {
     to = from;
     from = 0;
     step = 1;
-  } else if ((*p_to)->type == NUM) {
-    to = p_to->asDouble();
+  } else if ((*p_to)->type & NUM) {
+    to = p_to->asInt();
 
-    if ((*p_step)->type == NUM) {
-      step = p_step->asDouble();
+    if ((*p_step)->type & NUM) {
+      step = p_step->asInt();
     } else if ((*p_step)->type == NONE) {
       step = 1;
     } else {
