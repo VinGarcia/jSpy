@@ -30,16 +30,28 @@ int main(int argc, char* argv[]) {
         code.exec(map);
       } catch(const std::exception& e) {
         std::cout << e.what() << std::endl;
+      } catch(const char* c) {
+        std::cout << c << std::endl;
       }
     }
   } else if (argc == 2) {
+    // Read the file:
     std::ifstream t(argv[1]);
     std::stringstream ss;
     ss << t.rdbuf();
 
+    // Prepare as a code block:
     std::string code = "{" + ss.str() + "}";
-    BlockStatement b(code.c_str(), map);
-    b.exec(map);
+
+    // Execute it:
+    try {
+      BlockStatement b(code.c_str(), map);
+      b.exec(map);
+    } catch(const std::exception& e) {
+      std::cout << e.what() << std::endl;
+    } catch(const char* c) {
+      std::cout << c << std::endl;
+    }
   } else {
     throw std::invalid_argument("Expected a single file name as argument to the interpreter!");
   }
