@@ -165,10 +165,13 @@ class FuncDeclaration : public Statement {
   }
 };
 
+/* * * * * Return statements: * * * * */
+
 class ReturnStatement : public Statement {
+ protected:
   calculator expr;
 
- private:
+ protected:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
 
@@ -183,13 +186,7 @@ class ReturnStatement : public Statement {
   }
 };
 
-class YieldStatement : public Statement {
-  calculator expr;
-
- private:
-  void _compile(const char* code, const char** rest, TokenMap parent_scope);
-  returnState _exec(TokenMap scope) const;
-
+struct YieldStatement : public ReturnStatement {
  public:
   YieldStatement() {}
   YieldStatement(const char* code, const char** rest = 0,
@@ -199,16 +196,13 @@ class YieldStatement : public Statement {
   virtual Statement* clone() const {
     return new YieldStatement(*this);
   }
+
+  returnState _exec(TokenMap scope) const {
+    return returnState(YIELD, expr.eval(scope));
+  }
 };
 
-class FinishStatement : public Statement {
-  calculator expr;
-
- private:
-  void _compile(const char* code, const char** rest, TokenMap parent_scope);
-  returnState _exec(TokenMap scope) const;
-
- public:
+struct FinishStatement : public ReturnStatement {
   FinishStatement() {}
   FinishStatement(const char* code, const char** rest = 0,
                  TokenMap parent_scope = &TokenMap::empty) {
@@ -216,6 +210,10 @@ class FinishStatement : public Statement {
   }
   virtual Statement* clone() const {
     return new FinishStatement(*this);
+  }
+
+  returnState _exec(TokenMap scope) const {
+    return returnState(FINISH, expr.eval(scope));
   }
 };
 

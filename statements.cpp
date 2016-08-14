@@ -209,48 +209,6 @@ returnState ReturnStatement::_exec(TokenMap scope) const {
   return returnState(RETURN, expr.eval(scope));
 }
 
-/* * * * * YieldStatement Class * * * * */
-
-void YieldStatement::_compile(const char* code, const char** rest,
-                              TokenMap parent_scope) {
-  while (isspace(*code)) ++code;
-
-  if (strchr(";}\n", *code)) {
-    expr.compile("None");
-  } else {
-    expr.compile(code, parent_scope, ";}\n", &code);
-  }
-
-  if (*code && *code != '}') ++code;
-
-  if (rest) *rest = code;
-}
-
-returnState YieldStatement::_exec(TokenMap scope) const {
-  return returnState(YIELD, expr.eval(scope));
-}
-
-/* * * * * FinishStatement Class * * * * */
-
-void FinishStatement::_compile(const char* code, const char** rest,
-                              TokenMap parent_scope) {
-  while (isspace(*code)) ++code;
-
-  if (strchr(";}\n", *code)) {
-    expr.compile("None");
-  } else {
-    expr.compile(code, parent_scope, ";}\n", &code);
-  }
-
-  if (*code && *code != '}') ++code;
-
-  if (rest) *rest = code;
-}
-
-returnState FinishStatement::_exec(TokenMap scope) const {
-  return returnState(FINISH, expr.eval(scope));
-}
-
 /* * * * * FuncDeclaration Statement * * * * */
 
 std::string parseName(const char** source) {
