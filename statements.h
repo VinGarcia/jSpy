@@ -7,7 +7,10 @@ typedef unsigned uint;
 
 #include "shunting-yard.h"
 
-enum returnType { NORMAL, FINISH, RETURN, YIELD };
+enum returnType {
+  NORMAL, FINISH, RETURN,
+  YIELD, BREAK, CONTINUE, THROW
+};
 
 struct returnState {
   uint8_t type;
@@ -214,6 +217,36 @@ struct FinishStatement : public ReturnStatement {
 
   returnState _exec(TokenMap scope) const {
     return returnState(FINISH, expr.eval(scope));
+  }
+};
+
+struct BreakStatement : public ReturnStatement {
+  BreakStatement() {}
+  BreakStatement(const char* code, const char** rest = 0,
+                 TokenMap parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new BreakStatement(*this);
+  }
+
+  returnState _exec(TokenMap scope) const {
+    return BREAK;
+  }
+};
+
+struct ContinueStatement : public ReturnStatement {
+  ContinueStatement() {}
+  ContinueStatement(const char* code, const char** rest = 0,
+                 TokenMap parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new ContinueStatement(*this);
+  }
+
+  returnState _exec(TokenMap scope) const {
+    return CONTINUE;
   }
 };
 

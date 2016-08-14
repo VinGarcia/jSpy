@@ -126,6 +126,7 @@ returnState ForStatement::_exec(TokenMap scope) const {
       rs = body.exec(scope);
 
       if (rs.type == RETURN) return rs;
+      if (rs.type == BREAK) break;
     }
   } catch (...) {
     delete it;
@@ -165,6 +166,7 @@ returnState WhileStatement::_exec(TokenMap scope) const {
   while (cond.eval(scope).asBool() == true) {
     rs = body.exec(scope);
     if (rs.type == RETURN) return rs;
+    if (rs.type == BREAK) break;
   }
 
   return NORMAL;
@@ -316,6 +318,24 @@ Statement* buildStatement(const char** source, TokenMap scope) {
   switch (*code) {
   case '{':
     return new BlockStatement(code, source, scope);
+  case 'b':
+    _template = "break";
+    for (i = 1; i < 5; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
+      return new BreakStatement(code+5, source, scope);
+
+    break;
+  case 'c':
+    _template = "continue";
+    for (i = 1; i < 8; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 8 && !(isalnum(code[i]) || code[i] == '_'))
+      return new ContinueStatement(code+8, source, scope);
+
+    break;
   case 'm':
     _template = "matcher";
     for (i = 1; i < 7; ++i)

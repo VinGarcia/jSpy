@@ -91,6 +91,22 @@ TEST_CASE("Build and evaluate ForStatements") {
 
   REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["c"].asDouble() == 12);
+
+  // Test the break statement:
+  map["c"] = 0;
+  code_text = "for(n in range(10)) { if(n >= 5) { break; print('here'); } c = c+1; }";
+  REQUIRE_NOTHROW(code.compile(code_text+3, &rest));
+  REQUIRE_NOTHROW(code.exec(map));
+
+  REQUIRE(map["c"].asInt() == 5);
+
+  // Test the continue statement:
+  map["c"] = 0;
+  code_text = "for(n in range(10)) { if(n % 2) continue; c = c+1; }";
+  REQUIRE_NOTHROW(code.compile(code_text+3, &rest));
+  REQUIRE_NOTHROW(code.exec(map));
+
+  REQUIRE(map["c"].asInt() == 5);
 }
 
 TEST_CASE("Build and evaluate WhileStatements") {
