@@ -22,7 +22,7 @@ all: $(EXE)
 $(EXE): $(EXE).cpp $(OBJ) $(SUB_OBJ) $(CATCH).o
 	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) $(CATCH).o $(EXE).cpp -o $(EXE)
 
-jspy: $(OBJ) $(SUB_OBJ)
+jspy: jspy.cpp $(OBJ) $(SUB_OBJ)
 	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) jspy.cpp -o jspy
 
 run: jspy
