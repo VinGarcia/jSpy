@@ -192,7 +192,13 @@ returnState ExpStatement::_exec(TokenMap scope) const {
 
 void ReturnStatement::_compile(const char* code, const char** rest,
                                TokenMap parent_scope) {
-  expr.compile(code, parent_scope, ";}\n", &code);
+  while (isspace(*code)) ++code;
+
+  if (strchr(";}\n", *code)) {
+    expr.compile("None");
+  } else {
+    expr.compile(code, parent_scope, ";}\n", &code);
+  }
 
   if (*code && *code != '}') ++code;
 
@@ -207,7 +213,13 @@ returnState ReturnStatement::_exec(TokenMap scope) const {
 
 void YieldStatement::_compile(const char* code, const char** rest,
                               TokenMap parent_scope) {
-  expr.compile(code, parent_scope, ";}\n", &code);
+  while (isspace(*code)) ++code;
+
+  if (strchr(";}\n", *code)) {
+    expr.compile("None");
+  } else {
+    expr.compile(code, parent_scope, ";}\n", &code);
+  }
 
   if (*code && *code != '}') ++code;
 
@@ -222,7 +234,13 @@ returnState YieldStatement::_exec(TokenMap scope) const {
 
 void FinishStatement::_compile(const char* code, const char** rest,
                               TokenMap parent_scope) {
-  expr.compile(code, parent_scope, ";}\n", &code);
+  while (isspace(*code)) ++code;
+
+  if (strchr(";}\n", *code)) {
+    expr.compile("None");
+  } else {
+    expr.compile(code, parent_scope, ";}\n", &code);
+  }
 
   if (*code && *code != '}') ++code;
 

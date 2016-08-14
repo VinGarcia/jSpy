@@ -151,6 +151,13 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   REQUIRE(map["n1"].asDouble() == 1);
   REQUIRE(calculator::calculate(" my_sum(0,4) ", map).asDouble() == 4);
   REQUIRE(map["n1"].asDouble() == 0);
+
+  // Testing the return statement:
+  code_text = "function f() { n1 = 10; return; n1 = 20 }End();";
+  REQUIRE_NOTHROW(decl.compile(code_text+8, &rest, map));
+  REQUIRE_NOTHROW(decl.exec(map));
+  REQUIRE(calculator::calculate("f()", map).str() == "None");
+  REQUIRE(map["n1"].asDouble() == 10);
 }
 
 // The toRPN function is to be used as a debug tool.
