@@ -218,6 +218,21 @@ returnState YieldStatement::_exec(TokenMap scope) const {
   return returnState(YIELD, expr.eval(scope));
 }
 
+/* * * * * FinishStatement Class * * * * */
+
+void FinishStatement::_compile(const char* code, const char** rest,
+                              TokenMap parent_scope) {
+  expr.compile(code, parent_scope, ";}\n", &code);
+
+  if (*code && *code != '}') ++code;
+
+  if (rest) *rest = code;
+}
+
+returnState FinishStatement::_exec(TokenMap scope) const {
+  return returnState(FINISH, expr.eval(scope));
+}
+
 /* * * * * FuncDeclaration Statement * * * * */
 
 std::string parseName(const char** source) {
@@ -373,6 +388,13 @@ Statement* buildStatement(const char** source, TokenMap scope) {
 
     if (i == 8 && !(isalnum(code[i]) || code[i] == '_'))
       return new FuncDeclaration(code+8, source, scope);
+
+    _template = "finish";
+    for (i = 1; i < 6; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 6 && !(isalnum(code[i]) || code[i] == '_'))
+      return new FinishStatement(code+6, source, scope);
   }
 
   return new ExpStatement(code, source, scope);
@@ -446,8 +468,7 @@ returnState BlockStatement::_exec(TokenMap scope) const {
   returnState rs;
   for(const auto stmt : list) {
     rs = stmt->exec(scope);
-    if (rs.type == RETURN) return rs;
-    if (rs.type == YIELD) return rs;
+    if (rs.type != NORMAL) return rs;
   }
 
   return NORMAL;

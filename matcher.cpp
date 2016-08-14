@@ -54,7 +54,7 @@ packToken matcher_exec(TokenMap scope) {
         list.list().push_back(rs.value);
       }
 
-      if (rs.type == RETURN) {
+      if (rs.type == FINISH) {
         delete it;
         return list;
       }

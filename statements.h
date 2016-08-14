@@ -7,7 +7,7 @@ typedef unsigned uint;
 
 #include "shunting-yard.h"
 
-enum returnType { NORMAL, RETURN, YIELD };
+enum returnType { NORMAL, FINISH, RETURN, YIELD };
 
 struct returnState {
   uint8_t type;
@@ -198,6 +198,24 @@ class YieldStatement : public Statement {
   }
   virtual Statement* clone() const {
     return new YieldStatement(*this);
+  }
+};
+
+class FinishStatement : public Statement {
+  calculator expr;
+
+ private:
+  void _compile(const char* code, const char** rest, TokenMap parent_scope);
+  returnState _exec(TokenMap scope) const;
+
+ public:
+  FinishStatement() {}
+  FinishStatement(const char* code, const char** rest = 0,
+                 TokenMap parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new FinishStatement(*this);
   }
 };
 

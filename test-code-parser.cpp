@@ -315,8 +315,8 @@ TEST_CASE("Test MatcherDeclaration class execution") {
   GlobalScope vars;
   const char* code =
     "matcher name2 {\n"
-    "  \"pattern\" if ( a == 3 ) { yield 42 }\n"
-    "  \"pattern\" if ( b == 3 ) { yield 10 }\n"
+    "  \"pattern\" if ( a == 3 ) { return 42 }\n"
+    "  \"pattern\" if ( b == 3 ) { return 10 }\n"
     "}End()";
   MatcherDeclaration m;
 
@@ -332,8 +332,8 @@ TEST_CASE("Test Matcher built-in class execution") {
   GlobalScope vars;
   const char* code =
     "matcher M1 {\n"
-    "  \"pattern\" if ( a == True ) { if (not_sure == 1) yield 42; else return 42}\n"
-    "  \"pattern\" if ( b == True ) { yield 10 }\n"
+    "  \"pattern\" if ( a == True ) { if (not_sure == 1) return 42; else finish 42}\n"
+    "  \"pattern\" if ( b == True ) { return 10 }\n"
     "}End()";
   MatcherDeclaration m;
 
@@ -367,14 +367,14 @@ TEST_CASE("Test Matcher built-in class execution") {
 
   // Test what happens when no match is found:
   vars["a"] = true;
-  code = "matcher M3 {\n  \"pattern\" { yield 10 }\n}End()";
+  code = "matcher M3 {\n  \"pattern\" { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
 
-  code = "matcher M3 {\n  \"pattern\" if (False) { yield 10 }\n}End()";
+  code = "matcher M3 {\n  \"pattern\" if (False) { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", vars));
@@ -392,7 +392,7 @@ TEST_CASE("Test Matchers cross reference on patterns") {
     "  }"
     "  "
     "  matcher M1 {\n"
-    "    \"open (program)p;\" return 'openning %s' % p\n"
+    "    \"open (program)p;\" finish 'openning %s' % p\n"
     "  }"
     "}";
   BlockStatement b;
