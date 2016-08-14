@@ -15,7 +15,7 @@ CFLAGS += $(addprefix -I./, $(MODULES))
 
 # * * * * * Recipes * * * * *
 
-all: $(EXE)
+all: $(EXE) jspy
 
 %.o: %.cpp *.h; $(CXX) $(CFLAGS) -c $<
 
