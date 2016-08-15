@@ -5,10 +5,6 @@
 #include "../statements.h"
 #include "../matcher.h"
 
-void PREPARE_ENVIRONMENT() {
-
-}
-
 TEST_CASE("Build and evaluate BlockStatements") {
   const char* rest = 0;
   const char* code_text = "{ a = 2; b = 3; c = a+b; }End";
