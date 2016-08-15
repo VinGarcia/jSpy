@@ -4,14 +4,17 @@ This project provides an interpreter for the jSpy programming language.
 
 This language is built aiming to join together some of the best features
 from JavaScript and Python. So at the same time it tries to follow [The
-Zen of Python][python-zen] and an easy use of generators it also offers
-protypical inheritance, and function closures.
+Zen of Python][python-zen] it also offers protypical inheritance,
+and function closures.
 
 [python-zen]: https://www.python.org/dev/peps/pep-0020/
 
+All features are carrefully designed as to simplify its usage, and
+to keep a clean and consistent syntax.
+
 The jSpy language was created as a way to provide support to a new Speech
-Parser tool developed by VinGarcia originally called `Talkin`. This
-Parser is built-in into the language and can be accessed by using the
+Parser tool for natural language developed by Vinícius Garcia. This
+Parser is built into the language and can be accessed by using the
 reserved word `matcher` (See the examples section).
 
 *This project was created by Vinícius Garcia and relies heavily on
@@ -27,7 +30,7 @@ reserved word `matcher` (See the examples section).
  + Support for list and map containers
  + Support for prototypical inheritance
  + Garbage Collection by Reference Counting (not good with cyclic references)
- + Support for the `Talkin` matcher expressions.
+ + Support for advanced matcher expressions for NLP.
 
 ---
 
