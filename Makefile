@@ -1,4 +1,5 @@
-EXE = test-code-parser
+TEST_BIN = Test_bin
+TEST_SOURCE = $(addprefix tests/, language.cpp arrayClass.cpp)
 CATCH = catch
 SRC = statements.cpp range.cpp global-setup.cpp matcher.cpp pattern.cpp
 OBJ = $(SRC:.cpp=.o)
@@ -15,12 +16,12 @@ CFLAGS += $(addprefix -I./, $(MODULES))
 
 # * * * * * Recipes * * * * *
 
-all: $(EXE) jspy
+all: jspy $(TEST_BIN)
 
 %.o: %.cpp *.h; $(CXX) $(CFLAGS) -c $<
 
-$(EXE): $(EXE).cpp $(OBJ) $(SUB_OBJ) $(CATCH).o
-	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) $(CATCH).o $(EXE).cpp -o $(EXE)
+$(TEST_BIN): $(TEST_SOURCE) $(OBJ) $(SUB_OBJ) $(CATCH).o
+	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) $(CATCH).o $(TEST_SOURCE) -o $(TEST_BIN)
 
 jspy: jspy.cpp $(OBJ) $(SUB_OBJ)
 	$(CXX) $(CFLAGS) $(OBJ) $(SUB_OBJ) jspy.cpp -o jspy
@@ -31,9 +32,9 @@ run: jspy
 shell: jspy
 	./jspy
 
-test: $(EXE); ./$(EXE)
+test: $(TEST_BIN); ./$(TEST_BIN)
 
-check: $(EXE); valgrind ./$(EXE)
+check: $(TEST_BIN); valgrind ./$(TEST_BIN)
 
 $(SUB_OBJ):
 	@echo
@@ -41,4 +42,4 @@ $(SUB_OBJ):
 	make -s -C $(foreach m, $(MODULES), $(m))
 	@echo
 
-clean:; rm -f $(EXE) jspy *.o
+clean:; rm -f $(TEST_BIN) jspy *.o

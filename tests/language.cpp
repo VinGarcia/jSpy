@@ -2,8 +2,8 @@
 #include "catch.hpp"
 
 #include "shunting-yard.h"
-#include "statements.h"
-#include "matcher.h"
+#include "../statements.h"
+#include "../matcher.h"
 
 void PREPARE_ENVIRONMENT() {
 
