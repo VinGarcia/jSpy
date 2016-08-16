@@ -4,6 +4,7 @@
 #include "../pattern.h"
 
 using namespace std;
+using namespace pMatch;
 
 /* * * * * START TEST arrayClass * * * * */
 
@@ -88,7 +89,7 @@ TEST_CASE("objectClass", "[objectClass]") {
       REQUIRE_NOTHROW(oc.match("testando",0));
       CHECK(oc.getMatch().str() == "");
       
-      banco::addInst("teste: \"testando\" { print('working') } ");
+      objectClass::labels["teste"] = new strClass("testando");
       
       REQUIRE_NOTHROW(oc.match("testando",0));
       CHECK(oc.getMatch().str() == "testando");
@@ -99,7 +100,13 @@ TEST_CASE("objectClass", "[objectClass]") {
       REQUIRE_NOTHROW(oc.match("testestandoagora",3));
       CHECK(oc.getMatch().str() == "testando");
       
-      banco::addInst("teste: \"test\" { print('working') }");
+      std::cout << "  @objectClass - multiple adds to same label" << std::endl;
+      std::cout << "    Currently it overwrites the older label" << std::endl;
+      std::cout << "    In future it should just append to the label list"
+        << std::endl;
+      
+      delete objectClass::labels["teste"];
+      objectClass::labels["teste"] = new blockClass("(\"test\",\"testando\");");
       
       REQUIRE_NOTHROW(oc.match("testestandoagora",3));
       CHECK(oc.getMatch().str() == "testando|test");
