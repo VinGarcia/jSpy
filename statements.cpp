@@ -125,8 +125,8 @@ returnState ForStatement::_exec(TokenMap scope) const {
       scope[name] = *value;
       rs = body.exec(scope);
 
-      if (rs.type == RETURN) return rs;
       if (rs.type == BREAK) break;
+      if (rs.type != NORMAL && rs.type != CONTINUE) return rs;
     }
   } catch (...) {
     delete it;
@@ -165,8 +165,8 @@ returnState WhileStatement::_exec(TokenMap scope) const {
   returnState rs;
   while (cond.eval(scope).asBool() == true) {
     rs = body.exec(scope);
-    if (rs.type == RETURN) return rs;
     if (rs.type == BREAK) break;
+    if (rs.type != NORMAL && rs.type != CONTINUE) return rs;
   }
 
   return NORMAL;

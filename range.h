@@ -40,7 +40,7 @@ class UserFunction : public Function {
   virtual packToken exec(TokenMap scope) const {
     returnState st;
     st = body.exec(scope);
-    if (st.type == RETURN) {
+    if (st.type == RETURN || st.type == FINISH) {
       return st.value;
     } else {
       return packToken::None;

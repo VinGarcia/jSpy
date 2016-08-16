@@ -172,6 +172,91 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   REQUIRE(map["n1"].asDouble() == 10);
 }
 
+TEST_CASE("Flow control statements") {
+  const char* code =
+    "{"
+    "  outside = True;"
+    "  function f() {"
+    "    return True;"
+    "    outside = False;"
+    "  }"
+    "  ret = f();"
+    "  here = True;"
+    "}";
+
+  BlockStatement b;
+  TokenMap vars;
+
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["outside"].asBool() == true);
+  REQUIRE(vars["ret"].asBool() == true);
+  REQUIRE(vars["here"].asBool() == true);
+
+  code =
+    "{"
+    "  outside = True;"
+    "  function f() {"
+    "    for(n in range(1)) {"
+    "      return True;"
+    "    }"
+    "    outside = False;"
+    "  }"
+    "  ret = f();"
+    "  here = True;"
+    "}";
+
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["outside"].asBool() == true);
+  REQUIRE(vars["ret"].asBool() == true);
+  REQUIRE(vars["here"].asBool() == true);
+
+  code =
+    "{"
+    "  outside = True;"
+    "  function f() {"
+    // Finish should return from the function as would `return`
+    "    for(n in range(1)) {"
+    "      finish True;"
+    "    }"
+    "    outside = False;"
+    "  }"
+    "  ret = f();"
+    "  here = True;"
+    "}";
+
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["outside"].asBool() == true);
+  REQUIRE(vars["ret"].asBool() == true);
+  REQUIRE(vars["here"].asBool() == true);
+
+  code =
+    "{"
+    "  outside = False;"
+    "  function f() {"
+    // Check that break and continue are not returning from the function:
+    "    for(n in range(1)) {"
+    "      break;"
+    "    }"
+    "    for(n in range(1)) {"
+    "      continue;"
+    "    }"
+    "    outside = True;"
+    "    return True;"
+    "  }"
+    "  ret = f();"
+    "  here = True;"
+    "}";
+
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["outside"].asBool() == true);
+  REQUIRE(vars["ret"].asBool() == true);
+  REQUIRE(vars["here"].asBool() == true);
+}
+
 // The toRPN function is to be used as a debug tool.
 TEST_CASE("Test built-in functions and classes") {
   GlobalScope vars;
