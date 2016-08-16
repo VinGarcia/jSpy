@@ -1,251 +1,150 @@
-#include "../padrao.hpp"
 #include <iostream>
-#include "number.h"
 
 #include "catch.hpp"
-#include "catch_lower.hpp"
+#include "../pattern.h"
 
 using namespace std;
-
-/* * * * * START TEST strClass * * * * */
+using namespace pMatch;
 
 TEST_CASE("strClass", "[strClass]") {
 
-  /*
-   * Teste do strClass
-   */
+  std::string expected;
 
-  #if NUMBER==strClass || NUMBER==1 || NUMBER==ALL
-  {
-
-    using namespace pMatch;
-    
+  SECTION("Testing constructor") {
     string s("[a]bc[--]");
-    
-    strClass* sclass;
+
+    strClass sclass1, sclass2;;
     strClass::iterator it;
-    
-    // Testes:
-    
-    cout << " * * * * * pMatch::strClass * * * * *\n\n";
-    
-    cout << "Testando o formato: \"[a]bc[--]\"" << endl << endl;
-    
-    cout << 1 << endl;
-    cout << "teste abc[--]\n";
-    sclass = new strClass("[a]bc[--]"); it = sclass->begin();
-    cout << "      ";
-    cout << it->str(); it++; cout << it->str(); it++; cout << it->str(); it++; cout << it->str();
-    cout << endl << endl;
-  
-    cout << 2 << endl;
-    cout << "teste abc[--]\n";
-    sclass = new strClass(s); it = sclass->begin();
-    cout << "      ";
-    cout << it->str(); it++; cout << it->str(); it++; cout << it->str(); it++; cout << it->str();
-    cout << endl << endl;
-  
-    cout << 3 << endl;
-    cout << "teste abc[--]\n";
-    strClass sclass1("[a]bc[--]"); it = sclass1.begin();
-    cout << "      ";
-    cout << it->str(); it++; cout << it->str(); it++; cout << it->str(); it++; cout << it->str();
-    cout << endl << endl;
-  
-    cout << 4 << endl;
-    cout << "teste abc[--]\n";
-    strClass sclass2("[a]bc[--]"); it = sclass2.begin();
-    cout << "      ";
-    cout << it->str(); it++; cout << it->str(); it++; cout << it->str(); it++; cout << it->str();
-    cout << endl << endl;
-  
-  }
-  #endif
-    
-  /*
-   * Teste do strClass::match()
-   */
 
-  #if NUMBER==match || NUMBER==2 || NUMBER==ALL
-  {
-    using namespace pMatch;
-    
-    string s("testando com afeto");
-    
-    uint pos;
+    expected = "abc[--]";
+    REQUIRE(strClass("[a]bc[--]").str() == expected);
+
+    expected = "abc[--]";
+    REQUIRE(strClass(s).str() == expected);
+
+    expected = "abc[--]";
+    REQUIRE_NOTHROW(sclass1 = strClass("[a]bc[--]"));
+    REQUIRE(sclass1.str() == expected);
+
+    expected = "abc[--]";
+    REQUIRE_NOTHROW(sclass2 = strClass("[a]bc[--]"));
+    REQUIRE(sclass2.str() == expected);
+  }
+
+  SECTION("Testing simple matches") {
+    string s = "testando com afeto";
+
+    int32_t pos;
     bool b;
-    
-    // Testes:
-    
-    cout << " * * * * * strClass::match * * * * *\n\n";
-    
-    cout << "Testando os formatos: \"a\" ou \"[abc]\"" << endl;
-    
-    cout << 1 << endl;
-    cout << "teste 1\n";
-    b = strClass("testa").match(s, pos=0);
-    cout << "      " << b << endl<<endl;
-    
-    cout << 2 << endl;
-    cout << "teste 0\n";
-    b = strClass("esta").match(s, pos=0);
-    cout << "      " << b << endl<<endl;
-    
-    cout << 3 << endl;
-    cout << "teste 1\n";
-    b = strClass("esta").match(s, pos=1);
-    cout << "      " << b << endl<<endl;
-    
-    cout << 4 << endl;
-    cout << "teste 1\n";
-    b = strClass("[ t]a").match(s, pos=3);
-    cout << "      " << b << endl<<endl;
-    
-    cout << 5 << endl;
-    cout << "teste 1\n";
-    b = strClass("[ t]a").match(s, pos=12);
-    cout << "      " << b << endl<<endl;
-    
-    cout << 6 << endl;
-    cout << "teste 1\n";
-    b = strClass("[^t]a").match(s, pos=12);
-    cout << "      " << b << endl<<endl;
-    
-  }
-  #endif
-   
-  /*
-   * Teste do strClass::find()
-   *
-   */
-  #if NUMBER==find || NUMBER==3 || NUMBER==ALL
-  {
 
-    using namespace pMatch;
-    
-    string s("testando com carinho!");
-    
-    uint pos;
+    REQUIRE(strClass("testa").match(s, pos=0) == true);
+
+    REQUIRE(strClass("esta").match(s, pos=0) == false);
+
+    REQUIRE(strClass("esta").match(s, pos=1) == true);
+
+    REQUIRE(strClass("[ t]a").match(s, pos=3) == true);
+
+    REQUIRE(strClass("[ t]a").match(s, pos=12) == true);
+
+    REQUIRE(strClass("[^t]a").match(s, pos=12) == true);
+  }
+
+  SECTION ("Testing find() function") {
+    string s = "testando com carinho!";
+
+    uint32_t pos;
+    uint32_t fpos;
     tWord str;
-    
-    // Testes:
-    
-    cout << " * * * * * strClass::find() * * * * *\n\n";
-    
-    cout << 1 << endl;
-    cout << "teste \"t\"-0\n";
-    str = strClass("t").find(s, pos=0);
-    cout << " str: \"" << str << "\"-" << str.start() << endl<<endl;
-    
-    cout << 2 << endl;
-    cout << "teste \"ta\"-3\n";
-    str = strClass("ta").find(s, pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 3 << endl;
-    cout << "teste \"nho!\"-17\n";
-    str = strClass("nho!").find(s, pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 4 << endl;
-    cout << "teste \"com\"-9\n";
-    str = strClass("[a-c][m-p][m-p]").find(s, pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 5 << endl;
-    cout << "teste \"\"-0\n";
-    str = strClass("").find(s, pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 6 << endl;
-    cout << "teste \"com]\"-4\n";
-    str = strClass("com]").find("0c2[com]", pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 7 << endl;
-    cout << "teste \"[com]\"-3\n";
-    str = strClass("\\[com]").find("0c2[com]", pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 8 << endl;
-    cout << "teste \"2[com]\"-2\n";
-    str = strClass("2\\[com]").find("0c2[com]", pos=0);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << "Testando inputs diferentes do param `pos`" << endl<<endl;
-    
-    cout << 9 << endl;
-    cout << "teste \"t\"-3\n";
-    str = strClass("t").find(s, pos=1);
-    cout << " str: \"" << str << "\"-" << str.start()<< endl<<endl;
-    
-    cout << 10 << endl;
-    cout << "teste \"\"-21\n";
-    str = strClass("com").find(s, pos=14);
-    cout << " str: \"" << str << "\"-" << str.start() << endl<<endl;
-      
-  }
-  #endif
-    
-  /*
-   * Teste do strClass::getClass
-   */
-  #if NUMBER==getClass || NUMBER==4 || NUMBER==ALL
-  {
-    using namespace pMatch;
-    
-    strClass s;
-    uint start, pos;
-    
-    // Testes:
-    
-    cout << " * * * * * pMatch::strClass::getClass * * * * *\n\n";
-    
-    cout << 1 << endl;
-    cout << "teste feijoada 0 8\n";
-    s = strClass::getClass("feijoada", pos=start=0);
-    cout << "      " << s.str() << " " << start << " " << pos <<endl<<endl;
-    
-    cout << 2 << endl;
-    cout << "teste ijoada 2 8\n";
-    s = strClass::getClass("feijoada", pos=start=2);
-    cout << "      " << s.str() << " " << start << " " << pos <<endl<<endl;
-    
-    cout << 3 << endl;
-    cout << "teste fei 0 3\n";
-    s = strClass::getClass("fei(oada", pos=start=0);
-    cout << "      " << s.str() << " " << start << " " << pos <<endl<<endl;
-    
-    cout << 4 << endl;
-    cout << "teste fei(ada) 0 9\n";
-    s = strClass::getClass("fei\\(ada)", pos=start=0);
-    cout << "      " << s.str() << " " << start << " " << pos <<endl<<endl;
-    
-    cout << 5 << endl;
-    cout << "teste  8 8\n";
-    s = strClass::getClass("feijoada", pos=start=8);
-    cout << "      " << s.str() << " " << start << " " << pos <<endl<<endl;
-    
-    cout << "* * * * * Iniciando testes de erros: * * * * * " << endl << endl;
-    
-    cout << 6 << endl;
-    cout << "teste error\n";
-    try{s = strClass::getClass("feijoada", pos=-1); cout<<"      ok";}
-    catch(...){cout<<"      error";} cout<< endl<<endl;
-    
-    cout << 7 << endl;
-    cout << "teste error\n";
-    try{s = strClass::getClass("feijoada", pos=9); cout<<"      ok";}
-    catch(...){cout<<"      error";} cout<< endl<<endl;
-    
-    cout << 8 << endl;
-    cout << "teste ok\n";
-    try{s = strClass::getClass("feijoada\\", pos=0); cout<<"      ok";}
-    catch(...){cout<<"      error";} cout<< endl<<endl;
 
+    REQUIRE_NOTHROW(str = strClass("t").find(s, pos=0));
+    REQUIRE(str == "t");
+    REQUIRE(str.start() == 0);
+
+    expected = "ta";
+    REQUIRE_NOTHROW(str = strClass("ta").find(s, pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == 3);
+
+    expected = "nho!";
+    REQUIRE_NOTHROW(str = strClass("nho!").find(s, pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == 17);
+
+    expected = "com"; fpos = 9;
+    REQUIRE_NOTHROW(str = strClass("[a-c][m-p][m-p]").find(s, pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
+
+    expected = ""; fpos = 0;
+    REQUIRE_NOTHROW(str = strClass("").find(s, pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
+
+    expected = "com]"; fpos = 4;
+    REQUIRE_NOTHROW(str = strClass("com]").find("0c2[com]", pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
+
+    expected = "[com]"; fpos = 3;
+    REQUIRE_NOTHROW(str = strClass("\\[com]").find("0c2[com]", pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
+
+    expected = "2[com]"; fpos = 2;
+    REQUIRE_NOTHROW(str = strClass("2\\[com]").find("0c2[com]", pos=0));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
+
+    expected = "t"; fpos = 3;
+    REQUIRE_NOTHROW(str = strClass("t").find(s, pos=1));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
+
+    expected = ""; fpos = 21;
+    REQUIRE_NOTHROW(str = strClass("com").find(s, pos=14));
+    REQUIRE(str == expected);
+    REQUIRE(str.start() == fpos);
   }
-  #endif
+
+  SECTION("Testing the getClass() method") {
+    strClass sc;
+    uint32_t start, pos, fpos;
+
+    expected = "feijoada"; fpos = 8;
+    REQUIRE_NOTHROW(sc = strClass::getClass("feijoada", pos=0));
+    REQUIRE(sc.str() == expected);
+    REQUIRE(pos == fpos);
+
+    expected = "ijoada"; fpos = 8;
+    REQUIRE_NOTHROW(sc = strClass::getClass("feijoada", pos=2));
+    REQUIRE(sc.str() == expected);
+    REQUIRE(pos == fpos);
+
+    expected = "fei"; fpos = 3;
+    REQUIRE_NOTHROW(sc = strClass::getClass("fei(oada", pos=0));
+    REQUIRE(sc.str() == expected);
+    REQUIRE(pos == fpos);
+
+    expected = "fei(ada)"; fpos = 9;
+    REQUIRE_NOTHROW(sc = strClass::getClass("fei\\(ada)", pos=0));
+    REQUIRE(sc.str() == expected);
+    REQUIRE(pos == fpos);
+
+    expected = ""; fpos = 8;
+    REQUIRE_NOTHROW(sc = strClass::getClass("feijoada", pos=8));
+    REQUIRE(sc.str() == expected);
+    REQUIRE(pos == fpos);
+  }
+
+  SECTION("Testing error handling") {
+    strClass sc;
+    uint32_t start, pos, fpos;
+
+    REQUIRE_THROWS(strClass::getClass("feijoada", pos=-1));
+
+    REQUIRE_THROWS(strClass::getClass("feijoada", pos=9));
+
+    REQUIRE_NOTHROW(strClass::getClass("feijoada\\", pos=0));
+  }
 }
-  
-/* * * * * END TEST strClass * * * * */
-

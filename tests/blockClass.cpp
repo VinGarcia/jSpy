@@ -4,9 +4,10 @@
 #include "../pattern.h"
 
 using namespace std;
-std::string expected;
 
 TEST_CASE("blockClass", "[blockClass]") {
+
+  std::string expected;
 
   GIVEN("that it should build ok") {
     using namespace pMatch;
