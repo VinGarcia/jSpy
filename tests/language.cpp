@@ -314,6 +314,11 @@ TEST_CASE("Test built-in functions and classes") {
 
   REQUIRE_NOTHROW(p = it->next());
   REQUIRE(p == 0);
+
+  code = "L = list(reversed(list(1,2,3)))";
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["L"].str() == "[ 3, 2, 1 ]");
 }
 
 TEST_CASE("Test usage of the `new` function") {

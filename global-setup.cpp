@@ -97,6 +97,34 @@ packToken file_close(TokenMap scope) {
   return packToken::None;
 }
 
+struct reversedIterator : public Iterator {
+  TokenList list;
+  int64_t pos;
+  reversedIterator(TokenList list) : list(list) {
+    reset();
+  }
+  packToken* next() {
+    if (pos >= 0) {
+      size_t index = pos--;
+      return &(list[index]);
+    } else {
+      reset();
+      return 0;
+    }
+  }
+  void reset() { pos = list.list().size()-1; }
+
+  TokenBase* clone() const {
+    return new reversedIterator(*this);
+  }
+};
+
+const char* reversed_args[] = {"list"};
+packToken default_reversed(TokenMap scope) {
+  TokenList list = scope.find("list")->asList();
+  return packToken(new reversedIterator(list));
+}
+
 // The base class for the file objects.
 TokenMap BASE_file;
 
@@ -193,6 +221,7 @@ struct GlobalStartup {
     global["new"] = CppFunction(&default_new, 1, new_args, "new");
     global["rpn"] = CppFunction(&default_rpn, 1, one_arg, "rpn");
     global["open"] = CppFunction(&default_open, 2, open_args, "open");
+    global["reversed"] = CppFunction(&default_reversed, 1, reversed_args, "reversed");
 
     // Add a default class to global scope:
     global["Lazy"] = TokenMap();
