@@ -315,7 +315,7 @@ TEST_CASE("Test built-in functions and classes") {
   REQUIRE_NOTHROW(p = it->next());
   REQUIRE(p == 0);
 
-  code = "L = list(reversed(list(1,2,3)))";
+  code = "L = list(list(1,2,3).reverse())";
   REQUIRE_NOTHROW(b.compile(code));
   REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["L"].str() == "[ 3, 2, 1 ]");

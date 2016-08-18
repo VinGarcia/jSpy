@@ -97,10 +97,10 @@ packToken file_close(TokenMap scope) {
   return packToken::None;
 }
 
-struct reversedIterator : public Iterator {
+struct reverseIterator : public Iterator {
   TokenList list;
   int64_t pos;
-  reversedIterator(TokenList list) : list(list) {
+  reverseIterator(TokenList list) : list(list) {
     reset();
   }
   packToken* next() {
@@ -115,14 +115,13 @@ struct reversedIterator : public Iterator {
   void reset() { pos = list.list().size()-1; }
 
   TokenBase* clone() const {
-    return new reversedIterator(*this);
+    return new reverseIterator(*this);
   }
 };
 
-const char* reversed_args[] = {"list"};
-packToken default_reversed(TokenMap scope) {
-  TokenList list = scope.find("list")->asList();
-  return packToken(new reversedIterator(list));
+packToken default_reverse(TokenMap scope) {
+  TokenList list = scope.find("this")->asList();
+  return packToken(new reverseIterator(list));
 }
 
 // The base class for the file objects.
@@ -221,12 +220,14 @@ struct GlobalStartup {
     global["new"] = CppFunction(&default_new, 1, new_args, "new");
     global["rpn"] = CppFunction(&default_rpn, 1, one_arg, "rpn");
     global["open"] = CppFunction(&default_open, 2, open_args, "open");
-    global["reversed"] = CppFunction(&default_reversed, 1, reversed_args, "reversed");
 
     // Add a default class to global scope:
     global["Lazy"] = TokenMap();
     global["Lazy"]["__init__"] = CppFunction(&lazy_class_init, 1, lazy_args);
     global["Lazy"]["exec"] = CppFunction(&lazy_class_exec);
+
+    typeMap_t& type_map = calculator::type_attribute_map();
+    type_map[LIST]["reverse"] = CppFunction(&default_reverse, "reverse");
 
     // Startup the BASE_file prototype:
     BASE_file["readlines"] = CppFunction(file_readlines);
