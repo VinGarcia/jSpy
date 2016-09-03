@@ -151,6 +151,24 @@ class VarStatement : public Statement {
   }
 };
 
+class ScopedStatement : public Statement {
+  BlockStatement code;
+
+ private:
+  void _compile(const char* code, const char** rest, TokenMap parent_scope);
+  returnState _exec(TokenMap scope) const;
+
+ public:
+  ScopedStatement() {}
+  ScopedStatement(const char* code, const char** rest = 0,
+                  TokenMap parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new ScopedStatement(*this);
+  }
+};
+
 class ExpStatement : public Statement {
   calculator expr;
 

@@ -179,6 +179,29 @@ TEST_CASE("Build and evaluate VarStatements") {
   REQUIRE(child.map().count("v3") == 1);
 }
 
+TEST_CASE("Build and evaluate ScopedStatements") {
+  const char* rest = 0;
+  const char* code =
+    "scoped {\n"
+    "  var v1 = 1\n"
+    "  var v2 = 2\n"
+    "  v3 = v1 + v2\n"
+    "}";
+
+  TokenMap map;
+  ScopedStatement s;
+
+  map["v1"] = 10;
+  map["v3"] = 30;
+
+  REQUIRE_NOTHROW(s.compile(code+6, &rest));
+  REQUIRE_NOTHROW(s.exec(map));
+
+  REQUIRE(map["v1"].asInt() == 10);
+  REQUIRE(map["v3"].asInt() == 3);
+  REQUIRE(map.map().count("v2") == 0);
+}
+
 TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]") {
   const char* rest = 0;
   const char* code_text = "function my_sum (num1, num2) { n1 = num1; return num1 + num2 }End();";
