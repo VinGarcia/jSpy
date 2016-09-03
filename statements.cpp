@@ -8,6 +8,88 @@
 #include "./exp-parser/shunting-yard-exceptions.h"
 #include "./matcher.h"
 
+/* * * * * Utility functions: * * * * */
+
+std::string parseName(const char** source, char end_char = '\0') {
+  std::stringstream ss;
+  const char* code = *source;
+
+  // Parse the function name:
+  if (isalpha(*code) || *code == '_') {
+    ss << *code;
+    ++code;
+
+    while (isalnum(*code) || *code == '_') {
+      ss << *code;
+      ++code;
+    }
+
+    // Find the beggining of the non space character:
+    while (isspace(*code) && *code != end_char) ++code;
+  } else {
+    throw syntax_error("Expected variable name!");
+  }
+
+  *source = code;
+
+  return ss.str();
+}
+
+/* * * * * VarStatement Class * * * * */
+
+void VarStatement::_compile(const char* code, const char** rest,
+                            TokenMap parent_scope) {
+  // Ignore white spaces:
+  while (isspace(*code)) ++code;
+
+  // For each declaration:
+  while (1) {
+    decl_t decl;
+    // Extract the variable name:
+    decl.name = parseName(&code, '\n');
+
+    // Find the next character or delimiter in the line:
+    while (isblank(*code)) ++code;
+
+    if (*code && !strchr("=,};\n", *code)) {
+      throw syntax_error("Unexpected character after variable declaration!");
+    }
+
+    // Check if there is an assignment or a colon:
+    if (*code == '=') {
+      ++code;
+
+      // Ignore spaces before the expression,
+      // so the user may add '\n's here.
+      while (isspace(*code)) ++code;
+
+      // Parse the expression:
+      decl.expr.compile(code, parent_scope, ",};\n", &code);
+    } else {
+      decl.expr.compile("None");
+    }
+
+    declarations.push_back(decl);
+
+    // Find the next one or the end:
+    if (*code == ',') {
+      ++code;
+      while (isspace(*code)) ++code;
+    } else {
+      break;
+    }
+  }
+
+  if (rest) *rest = code;
+}
+
+returnState VarStatement::_exec(TokenMap scope) const {
+  for (const decl_t& decl : declarations) {
+    scope[decl.name] = decl.expr.eval(scope);
+  }
+  return NORMAL;
+}
+
 /* * * * * IfStatement Class * * * * */
 
 void IfStatement::_compile(const char* code, const char** rest,
@@ -213,31 +295,6 @@ returnState ReturnStatement::_exec(TokenMap scope) const {
 
 /* * * * * FuncDeclaration Statement * * * * */
 
-std::string parseName(const char** source) {
-  std::stringstream ss;
-  const char* code = *source;
-
-  // Parse the function name:
-  if (isalpha(*code) || *code == '_') {
-    ss << *code;
-    ++code;
-
-    while (isalnum(*code) || *code == '_') {
-      ss << *code;
-      ++code;
-    }
-
-    // Find the beggining of the non space character:
-    while (isspace(*code)) ++code;
-  } else {
-    throw syntax_error("Expected variable name!");
-  }
-
-  *source = code;
-
-  return ss.str();
-}
-
 void FuncDeclaration::_compile(const char* code, const char** rest,
                                TokenMap parent_scope) {
   // Make sure its empty:
@@ -336,6 +393,10 @@ Statement* buildStatement(const char** source, TokenMap scope) {
       return new ContinueStatement(code+8, source, scope);
 
     break;
+  case 'i':
+    if (code[1] == 'f' && !(isalnum(code[2]) || code[2] == '_'))
+      return new IfStatement(code+2, source, scope);
+    break;
   case 'm':
     _template = "matcher";
     for (i = 1; i < 7; ++i)
@@ -352,18 +413,9 @@ Statement* buildStatement(const char** source, TokenMap scope) {
       return new ReturnStatement(code+6, source, scope);
     
     break;
-  case 'y':
-    _template = "yield";
-    for (i = 1; i < 5; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
-      return new YieldStatement(code+5, source, scope);
-    
-    break;
-  case 'i':
-    if (code[1] == 'f' && !(isalnum(code[2]) || code[2] == '_'))
-      return new IfStatement(code+2, source, scope);
+  case 'v':
+    if (code[1] == 'a' && code[2] == 'r' && !(isalnum(code[3]) || code[3] == '_'))
+      return new VarStatement(code+3, source, scope);
     break;
   case 'w':
     _template = "while";
@@ -372,6 +424,15 @@ Statement* buildStatement(const char** source, TokenMap scope) {
 
     if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
       return new WhileStatement(code+5, source, scope);
+
+    break;
+  case 'y':
+    _template = "yield";
+    for (i = 1; i < 5; ++i)
+      if (code[i] != _template[i]) break;
+
+    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
+      return new YieldStatement(code+5, source, scope);
 
     break;
   case 'f':

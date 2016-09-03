@@ -81,7 +81,7 @@ struct MatcherStartup {
 /* * * * * MatcherDeclaration Statement * * * * */
 
 // From statements.cpp:
-std::string parseName(const char** source);
+std::string parseName(const char** source, char end_char = '\n');
 
 void MatcherDeclaration::_compile(const char* code, const char** rest,
                                   TokenMap parent_scope) {

@@ -122,7 +122,7 @@ TEST_CASE("Build and evaluate WhileStatements") {
 }
 
 TEST_CASE("Code block with for and if statements", "[BlockStatement]") {
-  const char* factorial_code =
+  const char* code =
     "{"
     "  n = 5;"
     "  total = 1;"
@@ -136,12 +136,47 @@ TEST_CASE("Code block with for and if statements", "[BlockStatement]") {
 
   const char* rest = 0;
   TokenMap map;
-  BlockStatement code;
+  BlockStatement b;
 
-  REQUIRE_NOTHROW(code.compile(factorial_code, &rest));
-  REQUIRE_NOTHROW(code.exec(map));
+  REQUIRE_NOTHROW(b.compile(code, &rest));
+  REQUIRE_NOTHROW(b.exec(map));
 
   REQUIRE(map["result"].asDouble() == 120);
+}
+
+TEST_CASE("Build and evaluate VarStatements") {
+  const char* rest = 0;
+  const char* code =
+    "var \n"
+    "v1 = 1,"
+    "\n"
+    "v2 =\n"
+    "2";
+
+  TokenMap map;
+  TokenMap child = map.getChild();
+  VarStatement v;
+
+  map["v1"] = 10;
+
+  REQUIRE_NOTHROW(v.compile(code+3, &rest));
+  REQUIRE_NOTHROW(v.exec(child));
+
+  REQUIRE(map["v1"].asInt() == 10);
+  REQUIRE(child["v1"].asInt() == 1);
+  REQUIRE(child["v2"].asInt() == 2);
+
+  rest = 0;
+  code = "var v3";
+  map["v3"] = 30;
+
+  REQUIRE_NOTHROW(v.compile(code+3, &rest));
+  REQUIRE_NOTHROW(v.exec(child));
+
+  REQUIRE(*rest == '\0');
+
+  // Test if the variable was declared on child scope:
+  REQUIRE(child.map().count("v3") == 1);
 }
 
 TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]") {

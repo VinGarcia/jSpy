@@ -129,6 +129,28 @@ class WhileStatement : public Statement {
   }
 };
 
+class VarStatement : public Statement {
+  struct decl_t {
+    std::string name;
+    calculator expr;
+  };
+  std::vector<decl_t> declarations;
+
+ private:
+  void _compile(const char* code, const char** rest, TokenMap parent_scope);
+  returnState _exec(TokenMap scope) const;
+
+ public:
+  VarStatement() {}
+  VarStatement(const char* code, const char** rest = 0,
+               TokenMap parent_scope = &TokenMap::empty) {
+    _compile(code, rest, parent_scope);
+  }
+  virtual Statement* clone() const {
+    return new VarStatement(*this);
+  }
+};
+
 class ExpStatement : public Statement {
   calculator expr;
 
