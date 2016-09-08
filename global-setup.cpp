@@ -161,8 +161,8 @@ packToken default_new(TokenMap scope) {
     Function* func = parent["__init__"].asFunc();
     Tuple tuple;
     // Copy the remaining arguments to this tuple:
-    for (packToken& arg : list.list()) {
-      tuple.tuple.push_back(arg->clone());
+    for (const packToken& arg : list.list()) {
+      tuple.list().push_back(arg);
     }
 
     Function::call(instance, func, &tuple, scope);
@@ -198,14 +198,14 @@ packToken lazy_class_exec(TokenMap scope) {
 
   Tuple tuple;
   // Copy the tokens from this.args:
-  for (packToken item : args.list()) {
-    tuple.push_back(item);
+  for (const packToken& item : args.list()) {
+    tuple.list().push_back(item);
   }
 
   // Copy the tokens received as exec() arguments:
   args = scope.find("args")->asList();
-  for (packToken item : args.list()) {
-    tuple.push_back(item);
+  for (const packToken& item : args.list()) {
+    tuple.list().push_back(item);
   }
 
   return Function::call(_this, func, &tuple, *(scope.parent()));
