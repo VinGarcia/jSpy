@@ -29,14 +29,18 @@ class Range : public Iterator {
 };
 
 class UserFunction : public Function {
-  argsList _args;
+  args_t _args;
   BlockStatement body;
+  const std::string _name;
 
  public:
-  UserFunction(argsList args, BlockStatement body, std::string name = "")
-               : _args(args), body(body) { this->name = name; }
+  const std::string name() const { return _name; }
 
-  virtual const argsList args() const { return _args; }
+ public:
+  UserFunction(args_t args, BlockStatement body, std::string name = "")
+               : _args(args), body(body), _name(name) {}
+
+  virtual const args_t args() const { return _args; }
   virtual packToken exec(TokenMap scope) const {
     returnState st;
     st = body.exec(scope);
