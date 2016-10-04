@@ -1,3 +1,5 @@
+![](./logo.png)
+
 # jSpy - Javascript-like Speech Parser framework with Pythonic features.
 
 This project provides an interpreter for the jSpy programming language.
