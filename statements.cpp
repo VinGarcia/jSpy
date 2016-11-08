@@ -5,7 +5,7 @@
 
 #include "./statements.h"
 #include "./range.h"
-#include "./exp-parser/shunting-yard-exceptions.h"
+#include "./cparse/shunting-yard-exceptions.h"
 #include "./matcher.h"
 
 /* * * * * Utility functions: * * * * */

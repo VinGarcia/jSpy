@@ -9,7 +9,7 @@ DEBUG = -g
 CFLAGS = -Wall -std=c++11 $(DEBUG)
 
 # * * * * * Subdirectories * * * * *
-SUB_OBJ = $(addprefix exp-parser/, core-shunting-yard.o builtin-features.o)
+SUB_OBJ = $(addprefix cparse/, core-shunting-yard.o builtin-features.o)
 
 MODULES += $(sort $(dir $(SUB_OBJ)))
 CFLAGS += $(addprefix -I./, $(MODULES))

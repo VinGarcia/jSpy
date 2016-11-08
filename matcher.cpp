@@ -1,11 +1,11 @@
 #include "./matcher.h"
-#include "./exp-parser/shunting-yard-exceptions.h"
+#include "./cparse/shunting-yard-exceptions.h"
 
 /* * * * * HOOK type * * * * */
 
 // This value is used as the type for Hook Tokens.
 // It was chosen so it won't colide with the default
-// types defined on: `exp-parser/shunting-yard.h`
+// types defined on: `cparse/shunting-yard.h`
 #define HOOK 0x10
 
 // Function used to extract a Hook from a packToken:
