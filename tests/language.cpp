@@ -315,7 +315,7 @@ TEST_CASE("Flow control statements") {
   REQUIRE(vars["here"].asBool() == true);
 }
 
-// The toRPN function is to be used as a debug tool.
+// The `rpn()` function is to be used as a debug tool.
 TEST_CASE("Test built-in functions and classes") {
   GlobalScope vars;
   REQUIRE_NOTHROW(calculator::calculate("str = rpn('a=2')", vars));
@@ -331,7 +331,7 @@ TEST_CASE("Test built-in functions and classes") {
   "      L.push(arg);"
   "    return val;"
   "  }"
-  "  lazy = new(Lazy, F, 'v1', 'v2');"
+  "  lazy = new Lazy(F, 'v1', 'v2');"
   "}";
 
   BlockStatement b;
@@ -379,7 +379,7 @@ TEST_CASE("Test built-in functions and classes") {
   REQUIRE(vars["L"].str() == "[ 3, 2, 1 ]");
 }
 
-TEST_CASE("Test usage of the `new` function") {
+TEST_CASE("Test usage of the `new` operator") {
   GlobalScope vars;
   const char* code =
     "{"
@@ -389,7 +389,7 @@ TEST_CASE("Test usage of the `new` function") {
     "  }"
     "  a.__init__ = init;"
     "  "
-    "  b = new(a,10);"
+    "  b = new a(10);"
     "}";
   BlockStatement b;
   REQUIRE_NOTHROW(b.compile(code));

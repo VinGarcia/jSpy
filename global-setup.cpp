@@ -48,7 +48,6 @@ struct lineIterator : public Iterator {
   }
 };
 
-const char* write_args[] = {"text"};
 packToken file_write(TokenMap scope) {
   TokenMap _this = scope.find("this")->asMap();
   std::string text = scope.find("text")->asString();
@@ -127,7 +126,6 @@ packToken default_reverse(TokenMap scope) {
 // The base class for the file objects.
 TokenMap BASE_file;
 
-const char* open_args[] = {"addr", "mode"};
 packToken default_open(TokenMap scope) {
   std::string addr = scope.find("addr")->asString();
   packToken p_mode = *scope.find("mode");
@@ -147,32 +145,6 @@ packToken default_open(TokenMap scope) {
   return obj_file;
 }
 
-// Function for instantiating instances of a class.
-const char* new_args[] = {"parent"};
-packToken default_new(TokenMap scope) {
-  TokenMap& parent = scope.find("parent")->asMap();
-  TokenList list = scope.find("args")->asList();
-
-  // Intantiate a new Map:
-  packToken instance = TokenMap(&parent);
-
-  // Call its init function if it exists:
-  if (parent.map().count("__init__") && parent["__init__"]->type == FUNC) {
-    Function* func = parent["__init__"].asFunc();
-    Tuple tuple;
-    // Copy the remaining arguments to this tuple:
-    for (const packToken& arg : list.list()) {
-      tuple.list().push_back(arg);
-    }
-
-    Function::call(instance, func, &tuple, scope);
-  }
-
-  // Return it:
-  return instance;
-}
-
-const char* one_arg[] = {"value"};
 packToken default_rpn(TokenMap scope) {
   std::string code = scope.find("value")->asString();
 
@@ -182,7 +154,6 @@ packToken default_rpn(TokenMap scope) {
 }
 
 /* * * * * lazy built-in class * * * * */
-const char* lazy_args[] = {"func"}; 
 packToken lazy_class_init(TokenMap scope) {
   TokenMap _this = scope.find("this")->asMap();
   _this["func"] = packToken(scope.find("func")->asFunc()->clone());
@@ -217,13 +188,12 @@ struct GlobalStartup {
   GlobalStartup() {
     TokenMap& global = TokenMap::default_global();
     global["global"] = global;
-    global["new"] = CppFunction(&default_new, 1, new_args, "new");
-    global["rpn"] = CppFunction(&default_rpn, 1, one_arg, "rpn");
-    global["open"] = CppFunction(&default_open, 2, open_args, "open");
+    global["rpn"] = CppFunction(&default_rpn, {"value"}, "rpn");
+    global["open"] = CppFunction(&default_open, {"addr", "mode"}, "open");
 
     // Add a default class to global scope:
     global["Lazy"] = TokenMap();
-    global["Lazy"]["__init__"] = CppFunction(&lazy_class_init, 1, lazy_args);
+    global["Lazy"]["__init__"] = CppFunction(&lazy_class_init, {"func"}, "init");
     global["Lazy"]["exec"] = CppFunction(&lazy_class_exec);
 
     typeMap_t& type_map = calculator::type_attribute_map();
@@ -232,7 +202,7 @@ struct GlobalStartup {
     // Startup the BASE_file prototype:
     BASE_file["readlines"] = CppFunction(file_readlines);
     BASE_file["read"] = CppFunction(file_read);
-    BASE_file["write"] = CppFunction(file_write, 1, write_args);
+    BASE_file["write"] = CppFunction(file_write, {"text"}, "write");
     BASE_file["close"] = CppFunction(file_close);
   }
 } global_startup;

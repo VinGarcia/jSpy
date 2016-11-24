@@ -1,7 +1,7 @@
 TEST_BIN = Test_bin
 TEST_SOURCE = $(addprefix tests/, language.cpp arrayClass.cpp blockClass.cpp strClass.cpp objectClass.cpp)
 CATCH = catch
-SRC = statements.cpp range.cpp global-setup.cpp matcher.cpp pattern.cpp
+SRC = statements.cpp range.cpp global-setup.cpp matcher.cpp pattern.cpp cparse-custom.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX    =  g++
