@@ -279,9 +279,7 @@ void ExpStatement::_compile(const char* code, const char** rest,
 }
 
 returnState ExpStatement::_exec(TokenMap scope) const {
-  expr.eval(scope);
-
-  return NORMAL;
+  return expr.eval(scope);
 }
 
 /* * * * * ReturnStatement Class * * * * */
@@ -561,5 +559,5 @@ returnState BlockStatement::_exec(TokenMap scope) const {
     if (rs.type != NORMAL) return rs;
   }
 
-  return NORMAL;
+  return rs;
 }

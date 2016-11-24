@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     std::cout << "\nJSpy 0.2a by Vinícius Garcia" << std::endl;
 
     while (true) {
+      std::cout << "> ";
       getline(std::cin, line);
       if (line == "exit") break;
 
@@ -27,7 +28,10 @@ int main(int argc, char* argv[]) {
 
       try {
         code.compile(line.c_str(), &rest, map);
-        code.exec(map);
+        packToken result = code.exec(map).value;
+        if (result->type != NONE && result->type != VAR) {
+          std::cout << result << std::endl;
+        }
       } catch(const std::exception& e) {
         std::cout << e.what() << std::endl;
       } catch(const char* c) {
