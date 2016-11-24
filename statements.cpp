@@ -309,9 +309,6 @@ returnState ReturnStatement::_exec(TokenMap scope) const {
 
 void FuncDeclaration::_compile(const char* code, const char** rest,
                                TokenMap parent_scope) {
-  // Make sure its empty:
-  args.clear();
-
   // Find the start of the name:
   while (isspace(*code)) ++code;
 
@@ -321,6 +318,17 @@ void FuncDeclaration::_compile(const char* code, const char** rest,
   } catch(syntax_error e) {
     throw syntax_error("Missing name after `function` key-word!");
   }
+
+  _compile(name, code, rest, parent_scope);
+
+  // Ignore white spaces:
+  while (isspace(*code)) ++code;
+}
+
+void FuncDeclaration::_compile(std::string name, const char* code,
+                              const char** rest, TokenMap parent_scope) {
+  // Make sure its empty:
+  args.clear();
 
   if (*code != '(') {
     throw syntax_error("Expected argument list after `function` reserved word!");
@@ -371,9 +379,13 @@ void FuncDeclaration::_compile(const char* code, const char** rest,
 }
 
 returnState FuncDeclaration::_exec(TokenMap scope) const {
-  scope[name] = packToken(new UserFunction(args, body, name));
+  scope[name] = this->asFunc();
 
   return NORMAL;
+}
+
+packToken FuncDeclaration::asFunc() const {
+  return packToken(new UserFunction(args, body, name));
 }
 
 /* * * * * BlockStatement Class * * * * */

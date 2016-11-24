@@ -379,7 +379,7 @@ TEST_CASE("Test built-in functions and classes") {
   REQUIRE(vars["L"].str() == "[ 3, 2, 1 ]");
 }
 
-TEST_CASE("Test usage of the `new` operator") {
+TEST_CASE("Test usage of the `new` reserved word") {
   GlobalScope vars;
   const char* code =
     "{"
@@ -395,6 +395,27 @@ TEST_CASE("Test usage of the `new` operator") {
   REQUIRE_NOTHROW(b.compile(code));
   REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["b"]["value"] == 10);
+}
+
+TEST_CASE("Test usage of the `function` reserved word") {
+  GlobalScope vars;
+  const char* code =
+    "{"
+    "  a = function() { return 'a'; }\n"
+    "  b = function   (){ return 'b'; }\n"
+    "  c = function c() { return 'c'; };"
+    "  d = function d (){ return 'd'; }\n"
+    // This will work when the operator () is evaluated from right to left
+    // "  exe = function() { return 'run'; }();"
+    "}";
+  BlockStatement b;
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["a"]->type == FUNC);
+  REQUIRE(vars["b"]->type == FUNC);
+  REQUIRE(vars["c"]->type == FUNC);
+  REQUIRE(vars["d"]->type == FUNC);
+  // REQUIRE(vars["exe"].asString() == "run");
 }
 
 TEST_CASE("Test Hook parser class") {

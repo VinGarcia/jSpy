@@ -3,6 +3,9 @@
 #include "./cparse/shunting-yard.h"
 #include "./cparse/shunting-yard-exceptions.h"
 
+#include "./statements.h"
+#include "./range.h"
+
 namespace custom_features {
 
 std::string parseName(const char** source, char end_char = '\0') {
@@ -85,10 +88,56 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
   *rest = expr;
 }
 
+class CompiledFunc : public Function {
+  FuncDeclaration func;
+
+ public:
+  CompiledFunc() : Function() {}
+  CompiledFunc(const char* code, const char** rest = 0,
+               TokenMap parent_scope = &TokenMap::empty)
+              : Function(), func("", code, rest, parent_scope) {}
+  virtual ~CompiledFunc() {}
+
+ public:
+  const std::string name() const { return ""; }
+  const args_t args() const { return {}; }
+  packToken exec(TokenMap scope) const {
+    return func.asFunc();
+  }
+
+ public:
+  TokenBase* clone() const {
+    return new CompiledFunc(*this);
+  }
+};
+
+void function_parser(const char* expr, const char** rest, rpnBuilder* data) {
+  // Ignore white spaces:
+  while (isspace(*expr)) ++expr;
+
+  if (isalpha(*expr) || *expr == '_') {
+    // Ignore the name:
+    while (isalnum(*expr) || *expr == '_') ++expr;
+    // Ignore white spaces:
+    while (isspace(*expr)) ++expr;
+  }
+
+  data->rpn.push(new CompiledFunc(expr, &expr, data->scope));
+  data->lastTokenWasOp = false;
+
+  data->handle_op("()");
+
+  data->rpn.push(new Tuple());
+  data->lastTokenWasOp = false;
+
+  *rest = expr;
+}
+
 struct Startup {
   Startup() {
     rWordMap_t& rwMap = calculator::default_rWordMap();
     rwMap["new"] = &new_parser;
+    rwMap["function"] = &function_parser;
 
     OppMap_t& opp = calculator::default_opPrecedence();
     opp["new_op"] = 14;

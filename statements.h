@@ -3,9 +3,7 @@
 #ifndef CODE_PARSER_H_
 #define CODE_PARSER_H_
 
-typedef unsigned uint;
-
-#include "shunting-yard.h"
+#include "./cparse/shunting-yard.h"
 
 enum returnType {
   NORMAL, FINISH, RETURN,
@@ -63,7 +61,7 @@ class BlockStatement : public Statement {
   BlockStatement(const BlockStatement& other);
   ~BlockStatement();
   BlockStatement& operator=(const BlockStatement& other);
-  uint size() { return list.size(); }
+  uint32_t size() { return list.size(); }
 
   virtual Statement* clone() const {
     return new BlockStatement(*this);
@@ -188,8 +186,7 @@ class ExpStatement : public Statement {
 };
 
 class FuncDeclaration : public Statement {
-  typedef std::list<std::string> strList;
-  strList args;
+  args_t args;
   BlockStatement body;
   std::string name;
 
@@ -197,12 +194,23 @@ class FuncDeclaration : public Statement {
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
 
+  void _compile(std::string name, const char* code, const char** rest = 0,
+                TokenMap parent_scope = &TokenMap::empty);
  public:
   FuncDeclaration() {}
   FuncDeclaration(const char* code, const char** rest = 0,
                   TokenMap parent_scope = &TokenMap::empty) {
     _compile(code, rest, parent_scope);
   }
+  FuncDeclaration(const std::string& name,
+                  const char* code, const char** rest = 0,
+                  TokenMap parent_scope = &TokenMap::empty) {
+    _compile(name, code, rest, parent_scope);
+  }
+
+ public:
+  packToken asFunc() const;
+
   virtual Statement* clone() const {
     return new FuncDeclaration(*this);
   }
