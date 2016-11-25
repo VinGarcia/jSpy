@@ -140,7 +140,7 @@ struct Startup {
     rwMap["function"] = &function_parser;
 
     OppMap_t& opp = calculator::default_opPrecedence();
-    opp["new_op"] = 14;
+    opp.add("new_op", 14);
 
     opMap_t& opMap = calculator::default_opMap();
     opMap.add({MAP, "new_op", TUPLE}, &new_operator);
