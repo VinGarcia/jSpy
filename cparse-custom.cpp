@@ -58,8 +58,15 @@ packToken new_operator(const packToken& left, const packToken& right, evaluation
 }
 
 void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
+
+  // Ignore white spaces:
+  while (isspace(*expr)) ++expr;
+  const char* name_start = expr;
+
   // Parse the class reference as an expression:
   TokenQueue_t name_rpn = calculator::toRPN(expr, data->scope, "(", &expr);
+
+  const char* name_end = expr;
 
   // Move `class_rpn` to the top of `data->rpn`:
   while (!name_rpn.empty()) {
@@ -80,8 +87,11 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
     data->open_bracket("(");
     ++expr;
   } else {
-    std::string name = calculator::str(name_rpn);
-    throw syntax_error("Expected '(' after 'new " + name + "'");
+
+    while (isspace(name_end[-1])) --name_end;
+    std::string name(name_start, name_end - name_start);
+
+    throw syntax_error("Expected '(' after `new " + name + "`");
   }
 
   // Save the '(' position:

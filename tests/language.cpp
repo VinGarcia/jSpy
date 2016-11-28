@@ -1,7 +1,8 @@
 #include <iostream>
 #include "catch.hpp"
 
-#include "shunting-yard.h"
+#include "../cparse/shunting-yard.h"
+#include "../cparse/shunting-yard-exceptions.h"
 #include "../statements.h"
 #include "../matcher.h"
 
@@ -395,6 +396,13 @@ TEST_CASE("Test usage of the `new` reserved word") {
   REQUIRE_NOTHROW(b.compile(code));
   REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["b"]["value"] == 10);
+
+  REQUIRE_THROWS(calculator::calculate("c = new a"));
+  try {
+    calculator::calculate("c = new a . b [' c ']");
+  } catch (const syntax_error& e) {
+    REQUIRE(e.what() == std::string("Expected '(' after `new a . b [' c ']`"));
+  }
 }
 
 TEST_CASE("Test usage of the `function` reserved word") {
