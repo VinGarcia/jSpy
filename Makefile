@@ -32,9 +32,9 @@ run: jspy
 shell: jspy
 	./jspy
 
-test: $(TEST_BIN); ./$(TEST_BIN)
+test: $(TEST_BIN); ./$(TEST_BIN) $(args)
 
-check: $(TEST_BIN); valgrind ./$(TEST_BIN)
+check: $(TEST_BIN); valgrind ./$(TEST_BIN) $(args)
 
 $(SUB_OBJ):
 	@echo

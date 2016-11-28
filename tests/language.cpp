@@ -413,7 +413,6 @@ TEST_CASE("Test usage of the `function` reserved word") {
     "  b = function   (){ return 'b'; }\n"
     "  c = function c() { return 'c'; };"
     "  d = function d (){ return 'd'; }\n"
-    // This will work when the operator () is evaluated from right to left
     // "  exe = function() { return 'run'; }();"
     "}";
   BlockStatement b;
