@@ -72,10 +72,8 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
   while (!name_rpn.empty()) {
     TokenBase* token = name_rpn.front();
     name_rpn.pop();
-    data->rpn.push(token);
+    data->handle_token(token);
   }
-
-  data->lastTokenWasOp = false;
 
   // Add the new operator to the queue:
   data->handle_op("new_op");
@@ -83,14 +81,10 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
   // Find the open bracket:
   while (*expr && *expr != '(') ++expr;
 
-  if (*expr == '(') {
-    data->open_bracket("(");
-    ++expr;
-  } else {
-
+  if (*expr != '(') {
+    // Expected '(', throw error:
     while (isspace(name_end[-1])) --name_end;
     std::string name(name_start, name_end - name_start);
-
     throw syntax_error("Expected '(' after `new " + name + "`");
   }
 
@@ -132,13 +126,11 @@ void function_parser(const char* expr, const char** rest, rpnBuilder* data) {
     while (isspace(*expr)) ++expr;
   }
 
-  data->rpn.push(new CompiledFunc(expr, &expr, data->scope));
-  data->lastTokenWasOp = false;
+  data->handle_token(new CompiledFunc(expr, &expr, data->scope));
 
   data->handle_op("()");
 
-  data->rpn.push(new Tuple());
-  data->lastTokenWasOp = false;
+  data->handle_token(new Tuple());
 
   *rest = expr;
 }
