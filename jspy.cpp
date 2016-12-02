@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
   std::string line;
   const char* rest;
   BlockStatement code;
-  GlobalScope map;
+  GlobalScope scope;
 
   if (argc == 1) {
     std::cout << "\nJSpy 0.2a by Vinícius Garcia" << std::endl;
@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
       if (line[pos] == '\0') continue;
 
       try {
-        code.compile(line.c_str(), &rest, map);
-        packToken result = code.exec(map).value;
+        code.compile(line.c_str(), &rest, scope);
+        packToken result = code.exec(scope).value;
         if (result->type != NONE && result->type != VAR) {
           std::cout << result << std::endl;
         }
@@ -49,8 +49,8 @@ int main(int argc, char* argv[]) {
 
     // Execute it:
     try {
-      BlockStatement b(code.c_str(), map);
-      b.exec(map);
+      BlockStatement b(code.c_str(), scope);
+      b.exec(scope);
     } catch(const std::exception& e) {
       std::cout << e.what() << std::endl;
     } catch(const char* c) {
