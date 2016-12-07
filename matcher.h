@@ -32,6 +32,9 @@ struct MatcherDeclaration : public Statement {
   returnState _exec(TokenMap scope) const;
 
  public:
+  void bind_to(TokenMap scope);
+
+ public:
   MatcherDeclaration() {}
   MatcherDeclaration(const char* code, const char** rest = 0,
                TokenMap parent_scope = &TokenMap::empty) {

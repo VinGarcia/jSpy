@@ -64,7 +64,7 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
   const char* name_start = expr;
 
   // Parse the class reference as an expression:
-  TokenQueue_t name_rpn = calculator::toRPN(expr, data->scope, "(", &expr);
+  TokenQueue_t name_rpn = calculator::toRPN(expr, "(", &expr);
 
   const char* name_end = expr;
 
@@ -93,19 +93,19 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
 }
 
 class CompiledFunc : public Function {
-  FuncDeclaration func;
+  mutable FuncDeclaration func;
 
  public:
   CompiledFunc() : Function() {}
-  CompiledFunc(const char* code, const char** rest = 0,
-               TokenMap parent_scope = &TokenMap::empty)
-              : Function(), func("", code, rest, parent_scope) {}
+  CompiledFunc(const char* code, const char** rest = 0)
+              : Function(), func("", code, rest, TokenMap::empty) {}
   virtual ~CompiledFunc() {}
 
  public:
   const std::string name() const { return ""; }
   const args_t args() const { return {}; }
   packToken exec(TokenMap scope) const {
+    func.bind_to(scope);
     return func.asFunc();
   }
 
@@ -126,7 +126,7 @@ void function_parser(const char* expr, const char** rest, rpnBuilder* data) {
     while (isspace(*expr)) ++expr;
   }
 
-  data->handle_token(new CompiledFunc(expr, &expr, data->scope));
+  data->handle_token(new CompiledFunc(expr, &expr));
 
   data->handle_op("()");
 

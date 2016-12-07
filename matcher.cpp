@@ -6,10 +6,10 @@
 // This value is used as the type for Hook Tokens.
 // It was chosen so it won't colide with the default
 // types defined on: `cparse/shunting-yard.h`
-#define HOOK 0x10
+#define HOOK 0x20
 
 // Function used to extract a Hook from a packToken:
-Hook asHook(packToken& p_hook) {
+Hook& asHook(packToken& p_hook) {
   TokenBase* b_hook = p_hook.token();
   if (b_hook->type == HOOK) {
     return static_cast<Token<Hook>*>(b_hook)->val;
@@ -154,6 +154,14 @@ returnState MatcherDeclaration::_exec(TokenMap scope) const {
   pMatch::objectClass::labels[name] = new Matcher(hooks);
 
   return NORMAL;
+}
+
+void MatcherDeclaration::bind_to(TokenMap scope) {
+  for (packToken& p : hooks.list()) {
+    Hook& h = asHook(p);
+    h.cond.bind_to(scope);
+    h.body.bind_to(scope);
+  }
 }
 
 bool Matcher::match(std::string input, uint pos) {

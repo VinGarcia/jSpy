@@ -27,6 +27,10 @@ class Statement {
   virtual returnState _exec(TokenMap scope) const = 0;
 
  public:
+  // Should call `bind_to()` in all sub-expressions:
+  virtual void bind_to(TokenMap scope) = 0;
+
+ public:
   virtual ~Statement() {}
   void compile(const char* code, const char** rest = 0,
                TokenMap parent_scope = &TokenMap::empty) {
@@ -48,6 +52,13 @@ class BlockStatement : public Statement {
  private:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
+
+ public:
+  void bind_to(TokenMap scope) {
+    for (Statement* s : list) {
+      s->bind_to(scope);
+    }
+  }
 
  public:
   BlockStatement() {}
@@ -79,6 +90,13 @@ class IfStatement : public Statement {
   returnState _exec(TokenMap scope) const;
 
  public:
+  void bind_to(TokenMap scope) {
+    cond.bind_to(scope);
+    _then.bind_to(scope);
+    _else.bind_to(scope);
+  }
+
+ public:
   IfStatement() {}
   IfStatement(const char* code, const char** rest = 0,
               TokenMap parent_scope = &TokenMap::empty) {
@@ -99,6 +117,12 @@ class ForStatement : public Statement {
   returnState _exec(TokenMap scope) const;
 
  public:
+  void bind_to(TokenMap scope) {
+    it_expr.bind_to(scope);
+    body.bind_to(scope);
+  }
+
+ public:
   ForStatement() {}
   ForStatement(const char* code, const char** rest = 0,
                TokenMap parent_scope = &TokenMap::empty) {
@@ -116,6 +140,12 @@ class WhileStatement : public Statement {
  private:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
+
+ public:
+  void bind_to(TokenMap scope) {
+    cond.bind_to(scope);
+    body.bind_to(scope);
+  }
 
  public:
   WhileStatement() {}
@@ -140,6 +170,13 @@ class VarStatement : public Statement {
   returnState _exec(TokenMap scope) const;
 
  public:
+  void bind_to(TokenMap scope) {
+    for (decl_t& d : declarations) {
+      d.expr.bind_to(scope);
+    }
+  }
+
+ public:
   VarStatement() {}
   VarStatement(const char* code, const char** rest = 0,
                TokenMap parent_scope = &TokenMap::empty) {
@@ -158,6 +195,11 @@ class ScopedStatement : public Statement {
   returnState _exec(TokenMap scope) const;
 
  public:
+  void bind_to(TokenMap scope) {
+    code.bind_to(scope);
+  }
+
+ public:
   ScopedStatement() {}
   ScopedStatement(const char* code, const char** rest = 0,
                   TokenMap parent_scope = &TokenMap::empty) {
@@ -174,6 +216,11 @@ class ExpStatement : public Statement {
  private:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
+
+ public:
+  void bind_to(TokenMap scope) {
+    expr.bind_to(scope);
+  }
 
  public:
   ExpStatement() {}
@@ -197,6 +244,12 @@ class FuncDeclaration : public Statement {
 
   void _compile(std::string name, const char* code, const char** rest = 0,
                 TokenMap parent_scope = &TokenMap::empty);
+
+ public:
+  void bind_to(TokenMap scope) {
+    body.bind_to(scope);
+  }
+
  public:
   FuncDeclaration() {}
   FuncDeclaration(const char* code, const char** rest = 0,
@@ -226,6 +279,11 @@ class ReturnStatement : public Statement {
  protected:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
+
+ public:
+  void bind_to(TokenMap scope) {
+    expr.bind_to(scope);
+  }
 
  public:
   ReturnStatement() {}
