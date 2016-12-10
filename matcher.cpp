@@ -46,9 +46,8 @@ packToken matcher_exec(TokenMap scope) {
 
     packToken* map = it->next();
 
-    returnState rs;
     while (map) {
-      rs = hook.body.exec(map->asMap());
+      returnState rs = hook.body.exec(map->asMap());
 
       if (rs.type != NORMAL && rs.value->type != NONE) {
         list.list().push_back(rs.value);

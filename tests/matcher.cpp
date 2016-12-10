@@ -6,7 +6,7 @@
 #include "../statements.h"
 #include "../matcher.h"
 
-TEST_CASE("Test Hook parser class") {
+TEST_CASE("Test Hook parser class", "[hook]") {
   GlobalScope vars;
   vars["a"] = 2;
   vars["resp"] = packToken::None;
@@ -41,7 +41,7 @@ TEST_CASE("Test Hook parser class") {
 
 // TODO(VinGarcia): This test causes memory leak from problem in the pattern.cpp file.
 //                  We must fix it.
-TEST_CASE("Testing the getIterator and traverse function") {
+TEST_CASE("Testing the getIterator and traverse function", "[hook][iterator]") {
   GlobalScope vars;
   vars["a"] = 2;
   vars["resp"] = packToken::None;
@@ -65,7 +65,7 @@ TEST_CASE("Testing the getIterator and traverse function") {
   REQUIRE(it->next() == NULL);
 }
 
-TEST_CASE("Test MatcherDeclaration class") {
+TEST_CASE("Test MatcherDeclaration class", "[matcher]") {
   GlobalScope vars;
   const char* code = "matcher name \"pattern\" if ( a == 3 ) { resp = 42 }End();";
   MatcherDeclaration m;
@@ -87,7 +87,7 @@ TEST_CASE("Test MatcherDeclaration class") {
   REQUIRE(m.hooks.list().size() == 2);
 }
 
-TEST_CASE("Test MatcherDeclaration class execution") {
+TEST_CASE("Test MatcherDeclaration class execution", "[matcher]") {
   GlobalScope vars;
   const char* code =
     "matcher name2 {\n"
@@ -101,10 +101,10 @@ TEST_CASE("Test MatcherDeclaration class execution") {
 
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE(calculator::calculate("name2.instanceof(Matcher)", vars).asBool() == true);
-  REQUIRE(calculator::calculate("name2.hooks.len()", vars).asDouble() == 2);
+  REQUIRE(calculator::calculate("name2.hooks.len()", vars).asInt() == 2);
 }
 
-TEST_CASE("Test Matcher built-in class execution") {
+TEST_CASE("Test Matcher built-in class execution", "[matcher][exec]") {
   GlobalScope vars;
   const char* code =
     "matcher M1 {\n"
@@ -118,28 +118,36 @@ TEST_CASE("Test Matcher built-in class execution") {
 
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE(calculator::calculate("M1.instanceof(Matcher)", vars).asBool() == true);
-  REQUIRE(calculator::calculate("M1.hooks.len()", vars).asDouble() == 2);
+  REQUIRE(calculator::calculate("M1.hooks.len()", vars).asInt() == 2);
 
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = true;
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 2);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 2);
   REQUIRE(vars["results"].str() == "[ 42, 10 ]");
 
   vars["a"] = true;
   vars["b"] = false;
   vars["not_sure"] = true;
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = false;
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
+
+  // Test variable extraction from text:
+  code = "matcher M3 {\n  \"pa(\"t*\")T;ern\" { return T }\n}End()";
+  REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
+  REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", vars));
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
+  REQUIRE(vars["results"].str() == "[ \"tt\" ]");
 
   // Test what happens when no match is found:
   vars["a"] = true;
@@ -147,14 +155,14 @@ TEST_CASE("Test Matcher built-in class execution") {
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 0);
   REQUIRE(vars["results"].str() == "[]");
 
   code = "matcher M3 {\n  \"pattern\" if (False) { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 0);
   REQUIRE(vars["results"].str() == "[]");
 }
 
@@ -177,6 +185,6 @@ TEST_CASE("Test Matchers cross reference on patterns") {
   REQUIRE_NOTHROW(b.exec(vars));
 
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('open firefox')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ \"openning firefox\" ]");
 }
