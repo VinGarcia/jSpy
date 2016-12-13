@@ -385,10 +385,11 @@ TEST_CASE("Test usage of the `new` reserved word") {
   const char* code =
     "{"
     "  a = map();"
-    "  function init(a) {"
-    "    this.value = a;"
-    "  }"
-    "  a.__init__ = init;"
+    // "  function init(a) {"
+    // "    this.value = a;"
+    // "  }"
+    // "  a.__init__ = init;"
+    "  a.__init__ = function(a) { this.value = a; };"
     "  "
     "  b = new a(10);"
     "}";
@@ -396,6 +397,7 @@ TEST_CASE("Test usage of the `new` reserved word") {
   REQUIRE_NOTHROW(b.compile(code));
   REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["b"]["value"] == 10);
+  REQUIRE(vars["b"].str() == "{ \"value\": 10 }");
 
   REQUIRE(calculator::calculate("c = new a()", vars));
   REQUIRE(vars["c"]["value"]->type == NONE);
