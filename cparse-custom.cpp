@@ -63,6 +63,10 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
   while (isspace(*expr)) ++expr;
   const char* name_start = expr;
 
+  if (*name_start == '(') {
+    throw syntax_error("Expected a class name after `new` operator!");
+  }
+
   // Parse the class reference as an expression:
   TokenQueue_t name_rpn = calculator::toRPN(expr, data->scope, "(", &expr);
 
