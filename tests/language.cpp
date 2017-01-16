@@ -428,6 +428,44 @@ TEST_CASE("Test usage of the `function` reserved word") {
   // REQUIRE(vars["exe"].asString() == "run");
 }
 
+TEST_CASE("Test usage of the `in` reserved word") {
+  TokenMap vars;
+  calculator c1("val in [1,'s',3]");
+
+  vars["val"] = 1;
+  REQUIRE(c1.eval(vars) == true);
+  vars["val"] = 2;
+  REQUIRE(c1.eval(vars) == false);
+  vars["val"] = "s";
+  REQUIRE(c1.eval(vars) == true);
+
+  calculator c2("val in (1,'s',3)");
+
+  vars["val"] = 1;
+  REQUIRE(c2.eval(vars) == true);
+  vars["val"] = 2;
+  REQUIRE(c2.eval(vars) == false);
+  vars["val"] = "s";
+  REQUIRE(c2.eval(vars) == true);
+
+  calculator c3("val in (1:'s':3)");
+
+  vars["val"] = 1;
+  REQUIRE(c3.eval(vars) == true);
+  vars["val"] = 2;
+  REQUIRE(c3.eval(vars) == false);
+  vars["val"] = "s";
+  REQUIRE(c3.eval(vars) == true);
+
+  calculator c4("val in {'a':1, 'b': 2}");
+  vars["val"] = "a";
+  REQUIRE(c4.eval(vars) == true);
+  vars["val"] = "c";
+  REQUIRE(c4.eval(vars) == false);
+  vars["val"] = "b";
+  REQUIRE(c4.eval(vars) == true);
+}
+
 TEST_CASE("Test Hook parser class") {
   GlobalScope vars;
   vars["a"] = 2;

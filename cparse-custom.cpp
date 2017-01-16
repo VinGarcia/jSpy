@@ -96,6 +96,30 @@ void new_parser(const char* expr, const char** rest, rpnBuilder* data) {
   *rest = expr;
 }
 
+packToken in_operator(const packToken& left, const packToken& right, evaluationData* data) {
+  Iterator* it;
+
+  if (right->type == IT) {
+    it = static_cast<Iterator*>(right->clone());
+  } else if (right->type & IT) {
+    it = static_cast<const Iterable*>(right.token())->getIterator();
+  } else {
+    throw syntax_error("Invalid use of `in` operator on non-iterable token!");
+  }
+
+  for (packToken* value = it->next(); value; value = it->next()) {
+    if (left == *value) return true;
+  }
+
+  delete it;
+
+  return false;
+}
+
+void in_parser(const char* expr, const char** rest, rpnBuilder* data) {
+  data->handle_op("in_op");
+}
+
 class CompiledFunc : public Function {
   FuncDeclaration func;
 
@@ -144,12 +168,15 @@ struct Startup {
     rWordMap_t& rwMap = calculator::default_rWordMap();
     rwMap["new"] = &new_parser;
     rwMap["function"] = &function_parser;
+    rwMap["in"] = &in_parser;
 
     OppMap_t& opp = calculator::default_opPrecedence();
     opp.add("new_op", 14);
+    opp.add("in_op", 8);
 
     opMap_t& opMap = calculator::default_opMap();
     opMap.add({MAP, "new_op", TUPLE}, &new_operator);
+    opMap.add({ANY_TYPE, "in_op", IT}, &in_operator);
   }
 } Startup;
 
