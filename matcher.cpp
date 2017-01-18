@@ -74,7 +74,12 @@ inline packToken cpp_match(TokenMap scope, bool match_one = false) {
     delete it;
   }
 
-  return list;
+  // TODO: Move this functionality to a more efficient location:
+  if (match_one == true) {
+    return false;
+  } else {
+    return list;
+  }
 }
 
 // The exec function of all matcher objects:
@@ -87,6 +92,10 @@ packToken matcher_one(TokenMap scope) {
 }
 
 packToken matcher_match(TokenMap scope) {
+  return cpp_match(scope, true) != false;
+}
+
+packToken matcher_count(TokenMap scope) {
   TokenList list = cpp_match(scope).asList();
   // If size == 0, return false, else return how many matches:
   return list.list().size();
@@ -103,6 +112,7 @@ struct MatcherStartup {
     matcher_super["match_one"] = CppFunction(&matcher_one, {"text"},
                                              "match_one");
     matcher_super["match"] = CppFunction(&matcher_match, {"text"}, "match");
+    matcher_super["count"] = CppFunction(&matcher_count, {"text"}, "count");
     matcher_super["__default__"] = true;
   }
 } matcher_startup;

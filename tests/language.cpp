@@ -583,7 +583,8 @@ TEST_CASE("Test Matcher built-in class execution") {
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = true;
-  REQUIRE(calculator::calculate("M1.match('pattern')", vars) == 2);
+  REQUIRE(calculator::calculate("M1.count('pattern')", vars) == 2);
+  REQUIRE(calculator::calculate("M1.match('pattern')", vars) == true);
   REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 2);
   REQUIRE(vars["results"].str() == "[ 42, 10 ]");
@@ -591,7 +592,8 @@ TEST_CASE("Test Matcher built-in class execution") {
   vars["a"] = true;
   vars["b"] = false;
   vars["not_sure"] = true;
-  REQUIRE(calculator::calculate("M1.match('pattern')", vars) == 1);
+  REQUIRE(calculator::calculate("M1.count('pattern')", vars) == 1);
+  REQUIRE(calculator::calculate("M1.match('pattern')", vars) == true);
   REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
@@ -608,7 +610,8 @@ TEST_CASE("Test Matcher built-in class execution") {
   code = "matcher M3 {\n  \"pattern\" { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
-  REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == 0);
+  REQUIRE(calculator::calculate("M3.count('no_match')", vars).asInt() == 0);
+  REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == false);
   REQUIRE_NOTHROW(calculator::calculate("results = M3.match_all('no_match')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
@@ -616,7 +619,8 @@ TEST_CASE("Test Matcher built-in class execution") {
   code = "matcher M3 {\n  \"pattern\" if (False) { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
-  REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == 0);
+  REQUIRE(calculator::calculate("M3.count('no_match')", vars).asInt() == 0);
+  REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == false);
   REQUIRE_NOTHROW(calculator::calculate("results = M3.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
