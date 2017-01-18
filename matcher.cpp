@@ -103,7 +103,7 @@ struct MatcherStartup {
     matcher_super["match_one"] = CppFunction(&matcher_one, {"text"},
                                              "match_one");
     matcher_super["match"] = CppFunction(&matcher_match, {"text"}, "match");
-    matcher_super["__default__"] = packToken::None();
+    matcher_super["__default__"] = true;
   }
 } matcher_startup;
 
