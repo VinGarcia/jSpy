@@ -26,8 +26,7 @@ TokenMap& Matcher_super_class() {
   return matcher_super;
 }
 
-// The exec function of all matcher objects:
-packToken matcher_exec(TokenMap scope) {
+inline packToken cpp_match(TokenMap scope, bool match_one = false) {
   TokenList list;
   std::string text = scope.find("text")->asString();
   TokenMap _this = scope.find("this")->asMap();
@@ -54,6 +53,12 @@ packToken matcher_exec(TokenMap scope) {
         rs.value = *def;
       }
 
+      // TODO: Move this functionality to a more efficient location:
+      if (match_one == true) {
+        delete it;
+        return rs.value;
+      }
+
       if (rs.value->type != NONE) {
         list.list().push_back(rs.value);
       }
@@ -72,8 +77,17 @@ packToken matcher_exec(TokenMap scope) {
   return list;
 }
 
+// The exec function of all matcher objects:
+packToken matcher_all(TokenMap scope) {
+  return cpp_match(scope, false);
+}
+
+packToken matcher_one(TokenMap scope) {
+  return cpp_match(scope, true);
+}
+
 packToken matcher_match(TokenMap scope) {
-  TokenList list = matcher_exec(scope).asList();
+  TokenList list = cpp_match(scope).asList();
   // If size == 0, return false, else return how many matches:
   return list.list().size();
 }
@@ -84,7 +98,10 @@ struct MatcherStartup {
     TokenMap& global = TokenMap::default_global();
     global["Matcher"] = Matcher_super_class();
     TokenMap& matcher_super = Matcher_super_class();
-    matcher_super["exec"] = CppFunction(&matcher_exec, {"text"}, "exec");
+    matcher_super["match_all"] = CppFunction(&matcher_all, {"text"},
+                                             "match_all");
+    matcher_super["match_one"] = CppFunction(&matcher_one, {"text"},
+                                             "match_one");
     matcher_super["match"] = CppFunction(&matcher_match, {"text"}, "match");
     matcher_super["__default__"] = packToken::None();
   }

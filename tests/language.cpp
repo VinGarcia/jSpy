@@ -584,7 +584,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   vars["b"] = true;
   vars["not_sure"] = true;
   REQUIRE(calculator::calculate("M1.match('pattern')", vars) == 2);
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 2);
   REQUIRE(vars["results"].str() == "[ 42, 10 ]");
 
@@ -592,14 +592,14 @@ TEST_CASE("Test Matcher built-in class execution") {
   vars["b"] = false;
   vars["not_sure"] = true;
   REQUIRE(calculator::calculate("M1.match('pattern')", vars) == 1);
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = false;
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
@@ -609,7 +609,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == 0);
-  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.match_all('no_match')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
 
@@ -617,7 +617,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
   REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == 0);
-  REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M3.match_all('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
 }
@@ -640,7 +640,7 @@ TEST_CASE("Test Matchers cross reference on patterns") {
   REQUIRE_NOTHROW(b.compile(code, &code, vars));
   REQUIRE_NOTHROW(b.exec(vars));
 
-  REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('open firefox')", vars));
+  REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('open firefox')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
   REQUIRE(vars["results"].str() == "[ \"openning firefox\" ]");
 }
