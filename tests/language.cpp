@@ -215,7 +215,7 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
 
-  map["n1"] = packToken::None;
+  map["n1"] = packToken::None();
   REQUIRE(calculator::calculate("my_sum(3,4) ", map).asDouble() == 7);
   REQUIRE(map["n1"].asDouble() == 3);
   REQUIRE(calculator::calculate(" my_sum(1,1) ", map).asDouble() == 2);
@@ -469,7 +469,7 @@ TEST_CASE("Test usage of the `in` reserved word") {
 TEST_CASE("Test Hook parser class") {
   GlobalScope vars;
   vars["a"] = 2;
-  vars["resp"] = packToken::None;
+  vars["resp"] = packToken::None();
   const char* code = "  \"pattern\" if ( a == 3 ) { resp = 42; }End(); ";
   Hook h;
 
@@ -504,7 +504,7 @@ TEST_CASE("Test Hook parser class") {
 TEST_CASE("Testing the getIterator and traverse function") {
   GlobalScope vars;
   vars["a"] = 2;
-  vars["resp"] = packToken::None;
+  vars["resp"] = packToken::None();
   const char* code = "  \"pattern\" if ( a == 3 ) { resp = 42; }End(); ";
   Hook h;
   Iterator* it;
@@ -583,6 +583,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = true;
+  REQUIRE(calculator::calculate("M1.match('pattern')", vars) == 2);
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 2);
   REQUIRE(vars["results"].str() == "[ 42, 10 ]");
@@ -590,15 +591,16 @@ TEST_CASE("Test Matcher built-in class execution") {
   vars["a"] = true;
   vars["b"] = false;
   vars["not_sure"] = true;
+  REQUIRE(calculator::calculate("M1.match('pattern')", vars) == 1);
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
   vars["a"] = true;
   vars["b"] = true;
   vars["not_sure"] = false;
   REQUIRE_NOTHROW(calculator::calculate("results = M1.exec('pattern')", vars));
-  REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
+  REQUIRE(calculator::calculate("results.len()", vars).asInt() == 1);
   REQUIRE(vars["results"].str() == "[ 42 ]");
 
   // Test what happens when no match is found:
@@ -606,6 +608,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   code = "matcher M3 {\n  \"pattern\" { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == 0);
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('no_match')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");
@@ -613,6 +616,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   code = "matcher M3 {\n  \"pattern\" if (False) { return 10 }\n}End()";
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE_NOTHROW(m.exec(vars));
+  REQUIRE(calculator::calculate("M3.match('no_match')", vars).asInt() == 0);
   REQUIRE_NOTHROW(calculator::calculate("results = M3.exec('pattern')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 0);
   REQUIRE(vars["results"].str() == "[]");

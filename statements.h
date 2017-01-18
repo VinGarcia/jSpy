@@ -13,11 +13,12 @@ enum returnType {
 struct returnState {
   uint8_t type;
   packToken value;
-  returnState() : type(NORMAL), value(packToken::None) {}
-  returnState(const returnType& type) : type(type), value(packToken::None) {}
+  bool value_omitted = true;
+  returnState() : type(NORMAL), value(packToken::None()) {}
+  returnState(const returnType& type) : type(type), value(packToken::None()) {}
   returnState(packToken value) : type(NORMAL), value(value) {}
-  returnState(const returnType& type, packToken value)
-              : type(type), value(value) {}
+  returnState(const returnType& type, packToken value, bool value_omitted = true)
+              : type(type), value(value), value_omitted(value_omitted) {}
 };
 
 class Statement {
@@ -222,6 +223,7 @@ class FuncDeclaration : public Statement {
 class ReturnStatement : public Statement {
  protected:
   calculator expr;
+  bool value_omitted = true;
 
  protected:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
@@ -250,7 +252,7 @@ struct YieldStatement : public ReturnStatement {
   }
 
   returnState _exec(TokenMap scope) const {
-    return returnState(YIELD, expr.eval(scope));
+    return returnState(YIELD, expr.eval(scope), value_omitted);
   }
 };
 
@@ -265,7 +267,7 @@ struct FinishStatement : public ReturnStatement {
   }
 
   returnState _exec(TokenMap scope) const {
-    return returnState(FINISH, expr.eval(scope));
+    return returnState(FINISH, expr.eval(scope), value_omitted);
   }
 };
 

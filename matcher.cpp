@@ -27,7 +27,6 @@ TokenMap& Matcher_super_class() {
 }
 
 // The exec function of all matcher objects:
-const char* matcher_args[] = {"text"};
 packToken matcher_exec(TokenMap scope) {
   TokenList list;
   std::string text = scope.find("text")->asString();
@@ -50,7 +49,12 @@ packToken matcher_exec(TokenMap scope) {
     while (map) {
       rs = hook.body.exec(map->asMap());
 
-      if (rs.type != NORMAL && rs.value->type != NONE) {
+      packToken* def;
+      if (rs.value_omitted && (def = _this.find("__default__"))) {
+        rs.value = *def;
+      }
+
+      if (rs.value->type != NONE) {
         list.list().push_back(rs.value);
       }
 
@@ -68,13 +72,21 @@ packToken matcher_exec(TokenMap scope) {
   return list;
 }
 
+packToken matcher_match(TokenMap scope) {
+  TokenList list = matcher_exec(scope).asList();
+  // If size == 0, return false, else return how many matches:
+  return list.list().size();
+}
+
 // Build the Matcher_super_class:
 struct MatcherStartup {
   MatcherStartup() {
     TokenMap& global = TokenMap::default_global();
     global["Matcher"] = Matcher_super_class();
     TokenMap& matcher_super = Matcher_super_class();
-    matcher_super["exec"] = CppFunction(&matcher_exec, 1, matcher_args);
+    matcher_super["exec"] = CppFunction(&matcher_exec, {"text"}, "exec");
+    matcher_super["match"] = CppFunction(&matcher_match, {"text"}, "match");
+    matcher_super["__default__"] = packToken::None();
   }
 } matcher_startup;
 
