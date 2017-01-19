@@ -165,16 +165,16 @@ void function_parser(const char* expr, const char** rest, rpnBuilder* data) {
 
 struct Startup {
   Startup() {
-    rWordMap_t& rwMap = calculator::default_rWordMap();
-    rwMap["new"] = &new_parser;
-    rwMap["function"] = &function_parser;
-    rwMap["in"] = &in_parser;
+    parserMap_t& parser = calculator::Default().parserMap;
+    parser.add("new", &new_parser);
+    parser.add("function", &function_parser);
+    parser.add("in", &in_parser);
 
-    OppMap_t& opp = calculator::default_opPrecedence();
+    OppMap_t& opp = calculator::Default().opPrecedence;
     opp.add("new_op", 14);
     opp.add("in_op", 8);
 
-    opMap_t& opMap = calculator::default_opMap();
+    opMap_t& opMap = calculator::Default().opMap;
     opMap.add({MAP, "new_op", TUPLE}, &new_operator);
     opMap.add({ANY_TYPE, "in_op", IT}, &in_operator);
   }
