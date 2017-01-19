@@ -195,7 +195,7 @@ returnState MatcherDeclaration::_exec(TokenMap scope) const {
   return NORMAL;
 }
 
-bool Matcher::match(std::string input, uint pos) {
+bool Matcher::match(std::string input, size_t pos) {
   // Limpa a lista de interpretações:
   this->var.lInt.clear();
   this->match_word.clear();
@@ -337,7 +337,7 @@ void Hook::compile(const char* code, const char** rest,
   }
 
   // Build the hook expression:
-  uint pos = 0;
+  size_t pos = 0;
   expr = pMatch::arrayClass(std::string(code), &pos);
 
   // Update code pointer:

@@ -46,7 +46,7 @@ struct Matcher : public pMatch::matcher {
   TokenList hooks;
   Matcher() {}
   Matcher(TokenList hooks) : hooks(hooks) {}
-  bool match(std::string input, uint pos);
+  bool match(std::string input, size_t pos);
   std::string str() { return ""; }
 };
 

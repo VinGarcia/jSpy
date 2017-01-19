@@ -34,7 +34,7 @@ TEST_CASE("strClass", "[strClass]") {
   SECTION("Testing simple matches") {
     string s = "testando com afeto";
 
-    int32_t pos;
+    size_t pos;
     bool b;
 
     REQUIRE(strClass("testa").match(s, pos=0) == true);
@@ -53,8 +53,8 @@ TEST_CASE("strClass", "[strClass]") {
   SECTION ("Testing find() function") {
     string s = "testando com carinho!";
 
-    uint32_t pos;
-    uint32_t fpos;
+    size_t pos;
+    size_t fpos;
     tWord str;
 
     REQUIRE_NOTHROW(str = strClass("t").find(s, pos=0));
@@ -109,7 +109,7 @@ TEST_CASE("strClass", "[strClass]") {
 
   SECTION("Testing the getClass() method") {
     strClass sc;
-    uint32_t start, pos, fpos;
+    size_t start, pos, fpos;
 
     expected = "feijoada"; fpos = 8;
     REQUIRE_NOTHROW(sc = strClass::getClass("feijoada", pos=0));
@@ -139,7 +139,7 @@ TEST_CASE("strClass", "[strClass]") {
 
   SECTION("Testing error handling") {
     strClass sc;
-    uint32_t start, pos, fpos;
+    size_t start, pos, fpos;
 
     REQUIRE_THROWS(strClass::getClass("feijoada", pos=-1));
 

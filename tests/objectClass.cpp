@@ -20,7 +20,7 @@ TEST_CASE("objectClass", "[objectClass]") {
     using pMatch::objectClass;
     
     objectClass oc;
-    uint pos;
+    size_t pos;
     std::string expected;
     
     THEN("It should work with a single argument") {

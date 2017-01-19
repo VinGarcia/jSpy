@@ -286,7 +286,7 @@ TEST_CASE("charClass", "[charClass]") {
     
     string s("testando");
     
-    uint pos;
+    size_t pos;
     char c;
     
     cout << " * * * * * charClass::find() * * * * *\n\n";
@@ -506,7 +506,7 @@ TEST_CASE("charClass", "[charClass]") {
     using namespace std;
     using pMatch::charClass;
     
-    uint pos;
+    size_t pos;
     string resp;
     
     try
