@@ -1,20 +1,20 @@
 #include "./matcher.h"
 #include "./cparse/shunting-yard-exceptions.h"
 
-/* * * * * HOOK type * * * * */
-
-// This value is used as the type for Hook Tokens.
-// It was chosen so it won't colide with the default
-// types defined on: `cparse/shunting-yard.h`
-#define HOOK 0x10
+/* * * * * Hook type * * * * */
 
 // Function used to extract a Hook from a packToken:
-Hook asHook(packToken& p_hook) {
-  TokenBase* b_hook = p_hook.token();
-  if (b_hook->type == HOOK) {
-    return static_cast<Token<Hook>*>(b_hook)->val;
+Hook asHook(packToken& token) {
+  if (token->type != FUNC) {
+    throw bad_cast("The token is not a Hook!");
+  }
+
+  Hook* hook = static_cast<Hook*>(token.token());
+
+  if (hook->name() != "hook") {
+    throw bad_cast("The token is not a Hook!");
   } else {
-    throw bad_cast("The token is not of HOOK type!");
+    return *hook;
   }
 }
 
@@ -30,12 +30,12 @@ inline packToken cpp_match(TokenMap scope, bool match_one = false) {
   TokenList list;
   std::string text = scope.find("text")->asString();
   TokenMap _this = scope.find("this")->asMap();
-  TokenList hooks = _this["hooks"].asList();
+  TokenMap hooks = _this["hooks"].asMap();
 
-  for (packToken& p_hook : hooks.list()) {
+  for (auto& pair : hooks.map()) {
 
     // Extract the hook from the packToken:
-    Hook hook = asHook(p_hook);
+    Hook hook = asHook(pair.second);
 
     // Ignore patterns if the guard evaluates to 'false':
     if (!hook.cond.eval(scope).asBool()) continue;
@@ -124,7 +124,7 @@ std::string parseName(const char** source, char end_char = '\n');
 
 void MatcherDeclaration::_compile(const char* code, const char** rest,
                                   TokenMap parent_scope) {
-  hooks.list().clear();
+  hooks.map().clear();
 
   // Find the start of the name:
   while (isspace(*code)) ++code;
@@ -141,8 +141,8 @@ void MatcherDeclaration::_compile(const char* code, const char** rest,
   // If there is a single pattern on this matcher:
   if (*code == '"') {
     // Add a new hook:
-    TokenBase* hook = new Token<Hook>(Hook(code, &code, parent_scope), HOOK);
-    hooks.list().push_back(packToken(hook));
+    Hook* hook = new Hook(code, &code, parent_scope);
+    hooks.map()[hook->text] = packToken(hook);
 
     if (rest) *rest = code;
     return;
@@ -164,8 +164,8 @@ void MatcherDeclaration::_compile(const char* code, const char** rest,
     }
 
     // Add a new hook:
-    TokenBase* hook = new Token<Hook>(Hook(code, &code, parent_scope), HOOK);
-    hooks.list().push_back(packToken(hook));
+    Hook* hook = new Hook(code, &code, parent_scope);
+    hooks.map()[hook->text] = packToken(hook);
 
     // Find the start of the next pattern:
     while (isspace(*code)) ++code;
@@ -201,8 +201,8 @@ bool Matcher::match(std::string input, uint pos) {
   this->match_word.clear();
 
   bool match;
-  for(packToken& p_hook : hooks.list()) {
-    Hook hook = asHook(p_hook);
+  for(auto& pair : hooks.map()) {
+    Hook hook = asHook(pair.second);
     match = hook.expr.match(input, pos);
 
     if (match) {
@@ -336,12 +336,17 @@ void Hook::compile(const char* code, const char** rest,
     throw syntax_error("Expected match expression after `matcher` reserved word!");
   }
 
+  const char* start = code+1;
+
   // Build the hook expression:
   uint pos = 0;
   expr = pMatch::arrayClass(std::string(code), &pos);
 
   // Update code pointer:
   code += pos;
+
+  // Update the text attribute:
+  this->text = std::string(start, pos-2);
 
   // Skip white spaces:
   while (isspace(*code)) ++code;

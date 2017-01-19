@@ -1,12 +1,14 @@
 
 #include <list>
 
+#include "./cparse/shunting-yard.h"
 #include "./statements.h"
 #include "./pattern.h"
 
 // This struct is used as sub-parser
 // by the MatcherDeclaration
-struct Hook {
+struct Hook : public Function {
+  std::string text;
   pMatch::arrayClass expr;
   calculator cond;
   BlockStatement body;
@@ -20,12 +22,30 @@ struct Hook {
        TokenMap parent_scope = &TokenMap::empty) {
     compile(code, rest, parent_scope);
   }
+
+  const std::string name() const {
+    return "hook";
+  }
+
+  const args_t args() const {
+    return {"text"};
+  }
+
+  packToken exec(TokenMap scope) const {
+    std::string text = scope["text"].asString();
+    Iterator* it = getIterator(text, scope);
+    return packToken(it);
+  }
+
+  TokenBase* clone() const {
+    return new Hook(*this);
+  }
 };
 
 // Its equivalent to the class `banco`
 struct MatcherDeclaration : public Statement {
   std::string name;
-  TokenList hooks;
+  TokenMap hooks;
 
  private:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
@@ -43,9 +63,9 @@ struct MatcherDeclaration : public Statement {
 };
 
 struct Matcher : public pMatch::matcher {
-  TokenList hooks;
+  TokenMap hooks;
   Matcher() {}
-  Matcher(TokenList hooks) : hooks(hooks) {}
+  Matcher(TokenMap hooks) : hooks(hooks) {}
   bool match(std::string input, uint pos);
   std::string str() { return ""; }
 };

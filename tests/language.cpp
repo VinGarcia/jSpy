@@ -533,7 +533,7 @@ TEST_CASE("Test MatcherDeclaration class") {
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE(*code == 'E');
   REQUIRE(m.name == "name");
-  REQUIRE(m.hooks.list().size() == 1);
+  REQUIRE(m.hooks.map().size() == 1);
 
   code =
     "matcher name2 {\n"
@@ -544,14 +544,14 @@ TEST_CASE("Test MatcherDeclaration class") {
   REQUIRE_NOTHROW(m.compile(code+7, &code, vars));
   REQUIRE(*code == 'E');
   REQUIRE(m.name == "name2");
-  REQUIRE(m.hooks.list().size() == 2);
+  REQUIRE(m.hooks.map().size() == 2);
 }
 
 TEST_CASE("Test MatcherDeclaration class execution") {
   GlobalScope vars;
   const char* code =
     "matcher name2 {\n"
-    "  \"pattern\" if ( a == 3 ) { return 42 }\n"
+    "  \"pat*ern\" if ( a == 3 ) { return 42 }\n"
     "  \"pattern\" if ( b == 3 ) { return 10 }\n"
     "}End()";
   MatcherDeclaration m;
@@ -568,7 +568,7 @@ TEST_CASE("Test Matcher built-in class execution") {
   GlobalScope vars;
   const char* code =
     "matcher M1 {\n"
-    "  \"pattern\" if ( a == True ) { if (not_sure == 1) return 42; else finish 42}\n"
+    "  \"pat*ern\" if ( a == True ) { if (not_sure == 1) return 42; else finish 42}\n"
     "  \"pattern\" if ( b == True ) { return 10 }\n"
     "}End()";
   MatcherDeclaration m;
@@ -647,4 +647,26 @@ TEST_CASE("Test Matchers cross reference on patterns") {
   REQUIRE_NOTHROW(calculator::calculate("results = M1.match_all('open firefox')", vars));
   REQUIRE(calculator::calculate("results.len()", vars).asDouble() == 1);
   REQUIRE(vars["results"].str() == "[ \"openning firefox\" ]");
+}
+
+TEST_CASE("Test accessing hooks as functions") {
+  GlobalScope vars;
+  const char* code =
+    "{"
+    "  matcher program {\n"
+    "    \"firefox\";"
+    "    \"chrome\";"
+    "  }"
+    "}";
+  BlockStatement b;
+
+  REQUIRE_NOTHROW(b.compile(code, &code, vars));
+  REQUIRE_NOTHROW(b.exec(vars));
+
+  // They should return an iterator:
+  packToken p_it;
+  REQUIRE_NOTHROW(p_it = calculator::calculate("program.hooks.firefox('firefox')", vars));
+  REQUIRE(p_it->type == IT);
+  Iterator* it = static_cast<Iterator*>(p_it.token());
+  REQUIRE(it->next()->str() == "{ \"text\": \"firefox\" }");
 }
