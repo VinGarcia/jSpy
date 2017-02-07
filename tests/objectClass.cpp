@@ -4,7 +4,7 @@
 #include "../pattern.h"
 
 using namespace std;
-using namespace pMatch;
+using namespace pattern;
 
 /* * * * * START TEST arrayClass * * * * */
 
@@ -17,7 +17,7 @@ TEST_CASE("objectClass", "[objectClass]") {
   GIVEN("That it should build ok") {
 
     // Teste do objectClass:
-    using pMatch::objectClass;
+    using pattern::objectClass;
     
     objectClass oc;
     size_t pos;
@@ -80,7 +80,7 @@ TEST_CASE("objectClass", "[objectClass]") {
     
   GIVEN("That it is a matcher") {
     
-    using pMatch::objectClass;
+    using pattern::objectClass;
 
     objectClass oc("teste");
     

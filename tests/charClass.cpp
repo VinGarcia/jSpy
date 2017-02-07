@@ -1,4 +1,4 @@
-#include "../padrao.hpp"
+#include "../padrao.h"
 #include <iostream>
 #include "number.h"
 
@@ -14,7 +14,7 @@ TEST_CASE("charClass", "[charClass]") {
   #if NUMBER==1 || NUMBER==charClass || NUMBER==ALL
   {   
     using namespace std;
-    using namespace pMatch;
+    using namespace pattern;
     
     cout << " * * * * * CharClass * * * * *\n\n";
     cout << "Testando casos de erro: \"[abc[\"" << endl;
@@ -169,13 +169,13 @@ TEST_CASE("charClass", "[charClass]") {
   #endif
     
   /*
-   * Teste da função: pMatch::charClass::match
+   * Teste da função: pattern::charClass::match
   */
 
   #if NUMBER==match || NUMBER==2 || NUMBER==ALL
   {  
     using namespace std;
-    using namespace pMatch;
+    using namespace pattern;
     
     bool resp;
     
@@ -282,7 +282,7 @@ TEST_CASE("charClass", "[charClass]") {
   */
   #if NUMBER==find || NUMBER==3 || NUMBER==ALL
   {  
-    using namespace pMatch;
+    using namespace pattern;
     
     string s("testando");
     
@@ -496,7 +496,7 @@ TEST_CASE("charClass", "[charClass]") {
   #endif
     
   /*
-   * Teste da função: pMatch::charClass::getClass
+   * Teste da função: pattern::charClass::getClass
    * 
   */
 
@@ -504,14 +504,14 @@ TEST_CASE("charClass", "[charClass]") {
   {
 
     using namespace std;
-    using pMatch::charClass;
+    using pattern::charClass;
     
     size_t pos;
     string resp;
     
     try
     {
-      cout << "\n\nTeste pMatch::charClass::getClass()" << endl << endl;
+      cout << "\n\nTeste pattern::charClass::getClass()" << endl << endl;
       
       cout << "Testando strings com uma única Classe: \"a\"" << endl << endl;
       

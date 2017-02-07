@@ -7,7 +7,7 @@
 // This struct is used as sub-parser
 // by the MatcherDeclaration
 struct Hook {
-  pMatch::arrayClass expr;
+  pattern::arrayClass expr;
   calculator cond;
   BlockStatement body;
 
@@ -42,7 +42,7 @@ struct MatcherDeclaration : public Statement {
   }
 };
 
-struct Matcher : public pMatch::matcher {
+struct Matcher : public pattern::matcher {
   TokenList hooks;
   Matcher() {}
   Matcher(TokenList hooks) : hooks(hooks) {}

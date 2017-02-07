@@ -8,7 +8,7 @@
 #ifndef CASAMENTO_PADRAO
 #define CASAMENTO_PADRAO
 
-namespace pMatch {
+namespace pattern {
 
 // Testado
 class charClass : public std::string {
@@ -51,7 +51,7 @@ class tWord : public std::string {
   
   tWord(std::string word, size_t start=0) : std::string(word) {
     if (start<0) {
-      throw "Parâmetro pos inválido em pMatch::tWord::tWord(string,int)";
+      throw "Parâmetro pos inválido em pattern::tWord::tWord(string,int)";
     }
     this->_start = start;
     this->_end   = start+this->length();
@@ -182,7 +182,7 @@ class strClass : public std::list<charClass>, public matcher {
 // Testado
 class arrayClass : public matcher {
   std::list<matcher*> lista;
-  
+
   void build(std::string str);
   
   std::list<tInterpretacao>
@@ -275,6 +275,6 @@ class objectClass : public matcher {
   std::string str() { return name; }
 };
 
-}  // namespace pMatch
+}  // namespace pattern
 
 #endif

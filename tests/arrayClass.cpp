@@ -16,7 +16,7 @@ TEST_CASE("arrayClass", "[arrayClass]") {
 
   GIVEN("that it should build ok") {
     
-    using namespace pMatch;
+    using namespace pattern;
     arrayClass ac;
     
     THEN("it should build with a given string") {
@@ -82,7 +82,7 @@ TEST_CASE("arrayClass", "[arrayClass]") {
   // Teste arrayClass::match()
   //
   GIVEN("that it is a matcher") {
-    using namespace pMatch;
+    using namespace pattern;
     arrayClass ac;
     bool bMatch;
     

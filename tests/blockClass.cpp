@@ -10,7 +10,7 @@ TEST_CASE("blockClass", "[blockClass]") {
   std::string expected;
 
   GIVEN("that it should build ok") {
-    using namespace pMatch;
+    using namespace pattern;
     blockClass bc;
 
     THEN("It should work with references") {
@@ -128,7 +128,7 @@ TEST_CASE("blockClass", "[blockClass]") {
   }
 
   GIVEN("that it should match ok") {
-    using namespace pMatch;
+    using namespace pattern;
     blockClass bc;
     bool bMatch;
 

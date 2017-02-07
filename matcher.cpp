@@ -190,7 +190,7 @@ returnState MatcherDeclaration::_exec(TokenMap scope) const {
   scope[name] = instance;
 
   // Also register the hooks on the objectClass label list:
-  pMatch::objectClass::labels[name] = new Matcher(hooks);
+  pattern::objectClass::labels[name] = new Matcher(hooks);
 
   return NORMAL;
 }
@@ -222,14 +222,14 @@ bool Matcher::match(std::string input, size_t pos) {
 // This Iterator is used only by the Hook Parser class
 
 struct MatchIterator : public Iterator {
-  pMatch::arrayClass expr;
+  pattern::arrayClass expr;
   std::string text;
   TokenMap scope;
 
   packToken last;
   bool more, match;
 
-  MatchIterator(pMatch::arrayClass expr, std::string text,
+  MatchIterator(pattern::arrayClass expr, std::string text,
                 TokenMap scope = &TokenMap::empty)
                 : expr(expr), text(text), scope(scope) {
     reset();
@@ -259,8 +259,8 @@ struct MatchIterator : public Iterator {
   // 
   // If there are more interpretations possible after it returned,
   // the `*p_more` argument will be set to `true`.
-  TokenMap traverse(pMatch::cVar& var, bool* p_more) {
-    using namespace pMatch;
+  TokenMap traverse(pattern::cVar& var, bool* p_more) {
+    using namespace pattern;
 
     // Create a new empty object:
     TokenMap obj = scope.getChild();
@@ -338,7 +338,7 @@ void Hook::compile(const char* code, const char** rest,
 
   // Build the hook expression:
   size_t pos = 0;
-  expr = pMatch::arrayClass(std::string(code), &pos);
+  expr = pattern::arrayClass(std::string(code), &pos);
 
   // Update code pointer:
   code += pos;

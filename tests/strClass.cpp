@@ -4,7 +4,7 @@
 #include "../pattern.h"
 
 using namespace std;
-using namespace pMatch;
+using namespace pattern;
 
 TEST_CASE("strClass", "[strClass]") {
 
