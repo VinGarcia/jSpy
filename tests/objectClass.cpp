@@ -89,7 +89,7 @@ TEST_CASE("objectClass", "[objectClass]") {
       REQUIRE_NOTHROW(oc.match("testando",0));
       CHECK(oc.getMatch().str() == "");
       
-      objectClass::labels["teste"] = new strClass("testando");
+      objectClass::labels["teste"] = new Pattern("testando");
       
       REQUIRE_NOTHROW(oc.match("testando",0));
       CHECK(oc.getMatch().str() == "testando");

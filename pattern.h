@@ -158,11 +158,11 @@ class matcher {
 };
 
 // Testado
-class strClass : public std::list<charClass>, public matcher {
+class Pattern : public std::list<charClass>, public matcher {
  public:
-  strClass() {}
-  strClass(const char* str);
-  strClass(std::string str);
+  Pattern() {}
+  Pattern(const char* str);
+  Pattern(std::string str);
   
   bool match(std::string input, size_t pos);
   tWord find(std::string input, size_t pos);
@@ -171,12 +171,12 @@ class strClass : public std::list<charClass>, public matcher {
   // ou um '(' que não seja precedido por um '\\'.
   // Seu comportamento trata o '(' de forma especial.
   // As demais funções dessa classe são indiferentes ao '('.
-  static strClass getClass(std::string format, size_t& pos, std::string stop_on = "(");
+  static Pattern getClass(std::string format, size_t& pos, std::string stop_on = "(");
   
   std::string str();
 };
 
-// Uma classe array contém uma sequencia de strClasse`s e blockClasse`s
+// Uma classe array contém uma sequencia de Pattern`s e blockClasse`s
 // match é obtido se o texto der match em todos da sequencia.
 // onde cada parte do texto deve dar match com um da sequencia.
 // Testado

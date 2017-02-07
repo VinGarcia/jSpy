@@ -298,10 +298,10 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
 /* * * * * END charClass: * * * * */
 
 
-/* * * * * START strClass * * * * */
+/* * * * * START Pattern * * * * */
 
   /*
-   * @nome - strClass::strClass()
+   * @nome - Pattern::Pattern()
    * 
    * @desc - Constroi uma lista formada por classe de caracteres.
    *         Note que é possível uma lista vazia.
@@ -312,7 +312,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
    *         E ela é casada com qualquer string.
    *         
    */
-  pattern::strClass::strClass(string str) {
+  pattern::Pattern::Pattern(string str) {
     size_t pos=0;
     
     // Tratando um erro possível:
@@ -323,25 +323,25 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
       this->push_back( pattern::charClass::getClass(str, pos) );
   }
   
-  pattern::strClass::strClass(const char* str) :
-    strClass(string(str)) {}
+  pattern::Pattern::Pattern(const char* str) :
+    Pattern(string(str)) {}
   
   /*
-   * @nome - strClass::match()
+   * @nome - Pattern::match()
    * 
    * @desc - recebe uma string e compara os primeiros caracteres
    *         dessa string com seu formato.
    *         retornando true se forem iguais.
    *
-   *         note que a strClass("").match(str,pos) retorna true sempre.
+   *         note que a Pattern("").match(str,pos) retorna true sempre.
    *
    */
-  bool pattern::strClass::match(string input, size_t pos) {
+  bool pattern::Pattern::match(string input, size_t pos) {
     // Limpa a lista antiga:
     this->match_word.clear();
     
     size_t len = this->size();
-    strClass::iterator it = this->begin();
+    Pattern::iterator it = this->begin();
     
     for(size_t i=0; i<len; i++, it++) {
       if(!it->match(input[pos+i]))
@@ -354,7 +354,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
   }
 
   /*
-   * @nome - strClass::find()
+   * @nome - Pattern::find()
    * 
    * @desc - recebe uma string input, e caminha por ela até encontrar
    *         o primeiro match entre o seu formato e uma substring de input.
@@ -362,7 +362,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
    *         Note que aceita-se a string vazia.        
    * 
    */
-  pattern::tWord pattern::strClass::find(string input, size_t pos) {
+  pattern::tWord pattern::Pattern::find(string input, size_t pos) {
     size_t lenF = this->size();
     
     // Se o formato for de string vazia:
@@ -370,7 +370,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
       // Aceite e retorne outra string vazia:
       return tWord("", pos);
     
-    strClass::iterator it=this->begin();
+    Pattern::iterator it=this->begin();
     
     size_t i=pos;
     
@@ -393,12 +393,12 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
     return tWord("", i);
   }
   
-  pattern::strClass pattern::strClass::getClass(string input, size_t& pos, string stop_on) {
+  pattern::Pattern pattern::Pattern::getClass(string input, size_t& pos, string stop_on) {
     size_t start = pos;
     char c;
     
     if(pos<0 || pos > input.length())
-      throw "variável pos com valor inválido! pattern::strClass::getClass";
+      throw "variável pos com valor inválido! pattern::Pattern::getClass";
      
     while(1) {
       // Pesquise pela string em busca de um abre parentesis:
@@ -411,14 +411,14 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
         continue;
       } else {
         // Caso contrário retorne a string encontrada:
-        return strClass(input.substr(start, pos-start));
+        return Pattern(input.substr(start, pos-start));
       }
     }
   }
   
   // Gera uma string representando o conteúdo do objeto:
-  string pattern::strClass::str() {
-    strClass::iterator it;
+  string pattern::Pattern::str() {
+    Pattern::iterator it;
     string resp("");
     
     for(it = this->begin(); it!=this->end(); it++)
@@ -426,7 +426,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
     return resp;
   }
 
-/* * * * * END strClass * * * * */
+/* * * * * END Pattern * * * * */
 
 /* * * * * START arrayClass * * * * */
   
@@ -444,7 +444,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
       if(str[pos]=='(' && (pos==0 || str[pos-1]!='\\')) {
         // Se havia algum texto antes do parentesis ainda não adicionado:
         if(antes!=pos)
-          lista.push_back(new strClass(str.substr(antes,pos-antes)));
+          lista.push_back(new Pattern(str.substr(antes,pos-antes)));
         
         // Como encontrei um bloco,
         // Adiciono o bloco à lista:
@@ -458,7 +458,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
         continue;
       }
       
-      // Caso encontre um repeater no meio do strClass:
+      // Caso encontre um repeater no meio do Pattern:
       if(str[pos]=='*' && pos>0 && str[pos-1]!='\\') {
         // Se não estava em uma classe, então
         // o repeater terá um único caractere iniciado em pos-1:
@@ -468,7 +468,7 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
         // Se havia algum texto antes do cc_pos que não foi adicionado,
         if(antes<cc_pos)
           // Adiciono-o.
-          lista.push_back(new strClass(str.substr(antes,cc_pos-antes)));
+          lista.push_back(new Pattern(str.substr(antes,cc_pos-antes)));
         
         // Adiciono a classe de caracteres na forma de um repeater à lista:
         // Lembrando que o repeater está implementado como um blockClass.
@@ -496,8 +496,8 @@ char pattern::charClass::_find(string input, size_t& pos, bool invert)
       }
       
       if(str[pos]=='\0') {
-        // Adicione o resto do str como um strClass:
-        lista.push_back(new strClass(str.substr(antes,pos-antes)));
+        // Adicione o resto do str como um Pattern:
+        lista.push_back(new Pattern(str.substr(antes,pos-antes)));
         break;
       }
       
