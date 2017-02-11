@@ -1,3 +1,3 @@
 [submodule "exp-parser"]
 	path = cparse
-	url = git@github.com:VinGarcia/cpp-expression-parser.git
+	url = https://github.com/VinGarcia/cpp-expression-parser.git
