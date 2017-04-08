@@ -27,7 +27,44 @@ reserved word `matcher` (See the examples section).
 
 ---
 
-# Features.
+## Download & Setup
+
+To download the code use:
+
+```bash
+git clone --recursive https://github.com/jSpy-pl/jSpy.git
+```
+
+To compile enter the newly created `jSpy` directory and run:
+
+```bash
+make jspy
+```
+> Note: Make sure to have `make` installed.
+
+To use the interpreter you have 2 options:
+
+1. Run `./jspy` to open the REPL interactive shell
+2. Run `./jspy script.spy` to execute a custom JSpy script
+
+### Hello World:
+
+Write a custom script:
+
+```JavaScript
+// script.spy
+print('Hello World')
+```
+
+Then run it:
+
+```bash
+./jspy script.spy
+```
+
+---
+
+## Features
  + User defined functions support
  + Support for list and map containers
  + Support for prototypical inheritance
@@ -36,9 +73,9 @@ reserved word `matcher` (See the examples section).
 
 ---
 
-# Minimal examples
+## Minimal examples
 
-## Hello World:
+### Hello World:
 
 ```Javascript
 make shell
@@ -49,7 +86,7 @@ print('hello world')
 hello world
 ```
 
-## Function usage:
+### Function usage:
 
 ```Javascript
 a = 0
@@ -67,7 +104,7 @@ my_print(1, 'two', None, 'and', 'some', 'more')
 [ "and", "some", "more" ]
 ```
 
-## Data containers:
+### Data containers:
 
 Map container:
 
@@ -116,7 +153,7 @@ print(b)
 [ 2 ]
 ```
 
-## Loops:
+### Loops:
 
 ```JavaScript
 for(n in range(5)) print(n)
@@ -154,7 +191,7 @@ while(a > 0) { print(a); a = a-1; }
 1
 ```
 
-## Object Inheritance:
+### Object Inheritance:
 
 The jSpy object Inheritance was made so it would allow protypical inheritance
 in a way it's not confusing and simillar enough to classical inheritance
@@ -201,9 +238,9 @@ Notes:
 
 In future this should change so it looks prettier than it is now.
 
-# Talkin Matchers
+## Pattern Matching
 
-A Talkin Matcher works like an extended Regular Expression.
+The JSpy Matcher construct works like an extended Regular Expression.
 It was made to deal with [Natural language texts][NLP] and so it
 is quite more complex and inefficient than a normal RegExp.
 
@@ -220,7 +257,7 @@ Note that the function association allows recursive parsing of text.
 
 It can then work as a very poweful irrestrict grammar.
 
-## Examples
+### Examples
 
 Simplest matcher possible:
 
@@ -247,7 +284,7 @@ M2.exec('patttttttttern')
 patttttttttern
 ```
 
-## Complex examples
+### Complex examples
 
 From now on the examples will be more complex.
 
