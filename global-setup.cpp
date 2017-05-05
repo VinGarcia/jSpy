@@ -49,8 +49,8 @@ struct lineIterator : public Iterator {
 };
 
 packToken file_write(TokenMap scope) {
-  TokenMap _this = scope.find("this")->asMap();
-  std::string text = scope.find("text")->asString();
+  TokenMap _this = scope["this"].asMap();
+  std::string text = scope["text"].asString();
 
   FILE* file = reinterpret_cast<FILE*>(_this["fp"].asInt());
 
@@ -60,7 +60,7 @@ packToken file_write(TokenMap scope) {
 }
 
 packToken file_read(TokenMap scope) {
-  TokenMap _this = scope.find("this")->asMap();
+  TokenMap _this = scope["this"].asMap();
 
   FILE* file = reinterpret_cast<FILE*>(_this["fp"].asInt());
 
@@ -75,7 +75,7 @@ packToken file_read(TokenMap scope) {
 }
 
 packToken file_readlines(TokenMap scope) {
-  TokenMap _this = scope.find("this")->asMap();
+  TokenMap _this = scope["this"].asMap();
 
   FILE* file = reinterpret_cast<FILE*>(_this["fp"].asInt());
 
@@ -87,7 +87,7 @@ packToken file_readlines(TokenMap scope) {
 }
 
 packToken file_close(TokenMap scope) {
-  TokenMap _this = scope.find("this")->asMap();
+  TokenMap _this = scope["this"].asMap();
 
   FILE* file = reinterpret_cast<FILE*>(_this["fp"].asInt());
   fclose(file);
@@ -127,10 +127,11 @@ packToken default_reverse(TokenMap scope) {
 TokenMap BASE_file;
 
 packToken default_open(TokenMap scope) {
-  std::string addr = scope.find("addr")->asString();
-  packToken p_mode = *scope.find("mode");
+  std::string addr = scope["addr"].asString();
+  packToken p_mode = scope["mode"];
   std::string mode;
 
+  // Set "r" as the default value for mode:
   if (p_mode->type == NONE) {
     mode = "r";
   } else {
@@ -155,7 +156,7 @@ packToken default_rpn(TokenMap scope) {
 
 /* * * * * lazy built-in class * * * * */
 packToken lazy_class_init(TokenMap scope) {
-  TokenMap _this = scope.find("this")->asMap();
+  TokenMap _this = scope["this"].asMap();
   _this["func"] = packToken(scope.find("func")->asFunc()->clone());
   _this["args"] = scope.find("args")->asList();
 
@@ -163,7 +164,7 @@ packToken lazy_class_init(TokenMap scope) {
 }
 
 packToken lazy_class_exec(TokenMap scope) {
-  TokenMap _this = scope.find("this")->asMap();
+  TokenMap _this = scope["this"].asMap();
   Function* func = _this["func"].asFunc();
   TokenList args = _this["args"].asList();
 
