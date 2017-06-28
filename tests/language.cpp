@@ -397,7 +397,7 @@ TEST_CASE("Test usage of the `new` reserved word") {
   REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["b"]["value"] == 10);
 
-  REQUIRE(calculator::calculate("c = new a()", vars));
+  REQUIRE_NOTHROW(calculator::calculate("c = new a()", vars));
   REQUIRE(vars["c"]["value"]->type == NONE);
 
   REQUIRE_THROWS(calculator::calculate("c = new a"));
