@@ -47,7 +47,7 @@ class UserFunction : public Function {
     if (st.type == RETURN || st.type == FINISH) {
       return st.value;
     } else {
-      return packToken::None;
+      return packToken::None();
     }
   }
 

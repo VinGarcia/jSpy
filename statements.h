@@ -13,8 +13,8 @@ enum returnType {
 struct returnState {
   uint8_t type;
   packToken value;
-  returnState() : type(NORMAL), value(packToken::None) {}
-  returnState(const returnType& type) : type(type), value(packToken::None) {}
+  returnState() : type(NORMAL), value(packToken::None()) {}
+  returnState(const returnType& type) : type(type), value(packToken::None()) {}
   returnState(packToken value) : type(NORMAL), value(value) {}
   returnState(const returnType& type, packToken value)
               : type(type), value(value) {}

@@ -215,7 +215,7 @@ TEST_CASE("Build and evaluate UserFunctions", "[UserFunctions][FuncDeclaration]"
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
 
-  map["n1"] = packToken::None;
+  map["n1"] = packToken::None();
   REQUIRE(calculator::calculate("my_sum(3,4) ", map).asDouble() == 7);
   REQUIRE(map["n1"].asDouble() == 3);
   REQUIRE(calculator::calculate(" my_sum(1,1) ", map).asDouble() == 2);
@@ -397,7 +397,7 @@ TEST_CASE("Test usage of the `new` reserved word") {
   REQUIRE_NOTHROW(b.exec(vars));
   REQUIRE(vars["b"]["value"] == 10);
 
-  REQUIRE(calculator::calculate("c = new a()", vars));
+  REQUIRE_NOTHROW(calculator::calculate("c = new a()", vars));
   REQUIRE(vars["c"]["value"]->type == NONE);
 
   REQUIRE_THROWS(calculator::calculate("c = new a"));
@@ -431,7 +431,7 @@ TEST_CASE("Test usage of the `function` reserved word") {
 TEST_CASE("Test Hook parser class") {
   GlobalScope vars;
   vars["a"] = 2;
-  vars["resp"] = packToken::None;
+  vars["resp"] = packToken::None();
   const char* code = "  \"pattern\" if ( a == 3 ) { resp = 42; }End(); ";
   Hook h;
 
@@ -466,7 +466,7 @@ TEST_CASE("Test Hook parser class") {
 TEST_CASE("Testing the getIterator and traverse function") {
   GlobalScope vars;
   vars["a"] = 2;
-  vars["resp"] = packToken::None;
+  vars["resp"] = packToken::None();
   const char* code = "  \"pattern\" if ( a == 3 ) { resp = 42; }End(); ";
   Hook h;
   Iterator* it;

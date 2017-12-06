@@ -56,7 +56,7 @@ packToken file_write(TokenMap scope) {
 
   fprintf(file, "%s", text.c_str());
 
-  return packToken::None;
+  return packToken::None();
 }
 
 packToken file_read(TokenMap scope) {
@@ -93,7 +93,7 @@ packToken file_close(TokenMap scope) {
   fclose(file);
   _this["fp"] = 0;
 
-  return packToken::None;
+  return packToken::None();
 }
 
 struct reverseIterator : public Iterator {
@@ -159,7 +159,7 @@ packToken lazy_class_init(TokenMap scope) {
   _this["func"] = packToken(scope.find("func")->asFunc()->clone());
   _this["args"] = scope.find("args")->asList();
 
-  return packToken::None;
+  return packToken::None();
 }
 
 packToken lazy_class_exec(TokenMap scope) {

@@ -137,14 +137,14 @@ void function_parser(const char* expr, const char** rest, rpnBuilder* data) {
 
 struct Startup {
   Startup() {
-    rWordMap_t& rwMap = calculator::default_rWordMap();
-    rwMap["new"] = &new_parser;
-    rwMap["function"] = &function_parser;
+    parserMap_t& parserMap = calculator::Default().parserMap;
+    parserMap.add("new", &new_parser);
+    parserMap.add("function", &function_parser);
 
-    OppMap_t& opp = calculator::default_opPrecedence();
+    OppMap_t& opp = calculator::Default().opPrecedence;
     opp.add("new_op", 14);
 
-    opMap_t& opMap = calculator::default_opMap();
+    opMap_t& opMap = calculator::Default().opMap;
     opMap.add({MAP, "new_op", TUPLE}, &new_operator);
   }
 } Startup;
