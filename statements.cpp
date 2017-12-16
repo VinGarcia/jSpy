@@ -475,8 +475,9 @@ Statement* buildStatement(const char** source, TokenMap scope) {
     for (i = 1; i < 8; ++i)
       if (code[i] != _template[i]) break;
 
-    if (i == 8 && !(isalnum(code[i]) || code[i] == '_'))
-      return new FuncDeclaration(code+8, source, scope);
+    // This will work for 'func' or 'function'
+    if ((i == 8 || i == 4) && !(isalnum(code[i]) || code[i] == '_'))
+      return new FuncDeclaration(code+i, source, scope);
 
     _template = "finish";
     for (i = 1; i < 6; ++i)

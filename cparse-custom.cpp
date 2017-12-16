@@ -168,6 +168,7 @@ struct Startup {
     parserMap_t& parser = calculator::Default().parserMap;
     parser.add("new", &new_parser);
     parser.add("function", &function_parser);
+    parser.add("func", &function_parser);
     parser.add("in", &in_parser);
 
     OppMap_t& opp = calculator::Default().opPrecedence;
