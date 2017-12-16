@@ -1,7 +1,8 @@
-
-#include "./cparse/shunting-yard.h"
 #include <cstdio>
 #include <sstream>
+
+#include "./cparse/shunting-yard.h"
+#include "./global-setup.h"
 
 struct lineIterator : public Iterator {
   FILE* file;
