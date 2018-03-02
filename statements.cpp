@@ -128,7 +128,7 @@ void IfStatement::_compile(const char* code, const char** rest,
   static const char* str = "else";
   for (int i = 0; i < 4; ++i) {
     if (str[i] != code[i]) {
-      if(rest) *rest = code;
+      if (rest) *rest = code;
       return;
     }
   }

@@ -6,6 +6,7 @@
 // default types defined on: `cparse/shunting-yard.h`
 enum customType {
   HOOK = 0x10,
+  TAG = 0x11
 };
 
 #endif

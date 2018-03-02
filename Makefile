@@ -1,7 +1,7 @@
 TEST_BIN = Test_bin
 TEST_SOURCE = $(addprefix tests/, language.cpp arrayClass.cpp blockClass.cpp strClass.cpp objectClass.cpp)
 CATCH = catch
-SRC = statements.cpp range.cpp global-setup.cpp matcher.cpp pattern.cpp cparse-custom.cpp
+SRC = statements.cpp range.cpp global-setup.cpp matcher.cpp pattern.cpp cparse-custom.cpp jspy-types.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX    =  g++
@@ -9,7 +9,7 @@ DEBUG = -g
 CFLAGS = -Wall -std=c++11 $(DEBUG)
 
 # * * * * * Subdirectories * * * * *
-SUB_OBJ = $(addprefix cparse/, core-shunting-yard.o builtin-features.o)
+SUB_OBJ = $(addprefix cparse/, core-shunting-yard.o)
 
 MODULES += $(sort $(dir $(SUB_OBJ)))
 CFLAGS += $(addprefix -I./, $(MODULES))

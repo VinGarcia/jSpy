@@ -5,6 +5,7 @@
 #include "../cparse/shunting-yard-exceptions.h"
 #include "../statements.h"
 #include "../matcher.h"
+#include "../jspy-types.h"
 
 TEST_CASE("Build and evaluate BlockStatements") {
   const char* rest = 0;
@@ -116,7 +117,7 @@ TEST_CASE("Build and evaluate WhileStatements") {
   REQUIRE_NOTHROW(code.compile(code_text+5, &rest));
   REQUIRE(rest != 0);
   REQUIRE(*rest == 'E');
-  
+
   REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["n"].asDouble() == 10);
   REQUIRE(map["b"].asDouble() == 9);
@@ -497,6 +498,74 @@ TEST_CASE("Test Hook parser class") {
   REQUIRE(h.expr.str() == "\"pattern\"");
   REQUIRE(h.cond.eval(vars).asBool() == true);
   REQUIRE_NOTHROW(h.body.exec(vars));
+}
+
+TEST_CASE("Testing HashTag Parser Class", "[tag]") {
+  GlobalScope vars;
+  const char* code =
+    "{"
+    "  var a = #test\n"
+    "}";
+  BlockStatement b;
+  HashTag tag1, tag2, tag3;
+
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+  REQUIRE(vars["a"]->type == TAG);
+
+  tag1 = vars["a"].as<HashTag>();
+  REQUIRE(tag1.name() == "test");
+
+  code =
+    "{"
+    "  var a = #test\n"
+    "  var b = #test;"
+    "  var c = #other\n"
+    "}";
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+
+  REQUIRE_NOTHROW(tag1 = vars["a"].as<HashTag>());
+  REQUIRE_NOTHROW(tag2 = vars["b"].as<HashTag>());
+  REQUIRE_NOTHROW(tag3 = vars["c"].as<HashTag>());
+
+  REQUIRE(tag1.tag_id == tag2.tag_id);
+  REQUIRE(tag1.tag_id != tag3.tag_id);
+
+  // Testing tags with a MAP attached:
+  code =
+    "{"
+    "  var a = #test {\n"
+    "    msg : 'test'\n"
+    "  }\n"
+    "}";
+  REQUIRE_NOTHROW(b.compile(code));
+  REQUIRE_NOTHROW(b.exec(vars));
+
+  REQUIRE(vars["a"].as<HashTag>().data->type == MAP);
+  REQUIRE(vars["a"].as<HashTag>().data.asMap()["msg"] == "test");
+}
+
+TEST_CASE("Testing HashTag related functions", "[tag]") {
+  GlobalScope vars;
+  HashTag tag1("test1"), tag2("test1"), tag3("test2");
+  vars["a"] = tag1;
+  vars["b"] = tag2;
+  vars["c"] = tag3;
+
+  // Operator "==":
+  REQUIRE(calculator::calculate("a == b", vars) == true);
+  REQUIRE(calculator::calculate("a == c", vars) == false);
+
+  // Operator "[]" and ".":
+  tag1.data = TokenMap();
+  tag1.data["msg"] = "testing";
+  vars["a"] = tag1;
+  REQUIRE(calculator::calculate("a['msg']", vars) == "testing");
+  REQUIRE_NOTHROW(calculator::calculate("b['msg']", vars));
+
+  REQUIRE(calculator::calculate("a.msg", vars) == "testing");
+  REQUIRE_NOTHROW(calculator::calculate("b.msg", vars));
 }
 
 // TODO(VinGarcia): This test causes memory leak from problem in the pattern.cpp file.

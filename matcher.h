@@ -22,7 +22,6 @@ struct Hook {
   }
 };
 
-// Its equivalent to the class `banco`
 struct MatcherDeclaration : public Statement {
   std::string name;
   TokenList hooks;
