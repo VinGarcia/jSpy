@@ -5,13 +5,13 @@
 /* * * * * HOOK type * * * * */
 
 // Function used to extract a Hook from a packToken:
-Hook asHook(packToken& p_hook) {
-  TokenBase* b_hook = p_hook.token();
-  if (b_hook->type == HOOK) {
-    return static_cast<Token<Hook>*>(b_hook)->val;
-  } else {
-    throw bad_cast("The token is not of HOOK type!");
+template<>
+Hook& packToken::as<Hook>() const {
+  if (base->type != HOOK) {
+    throw bad_cast(
+      "The token is not of HOOK type!");
   }
+  return static_cast<Token<Hook>*>(base)->val;
 }
 
 /* * * * * Matcher built-in class * * * * */
@@ -31,7 +31,7 @@ inline packToken cpp_match(TokenMap scope, bool match_one = false) {
   for (packToken& p_hook : hooks.list()) {
 
     // Extract the hook from the packToken:
-    Hook hook = asHook(p_hook);
+    Hook hook = p_hook.as<Hook>();
 
     // Ignore patterns if the guard evaluates to 'false':
     if (!hook.cond.eval(scope).asBool()) continue;
@@ -198,7 +198,7 @@ bool Matcher::match(std::string input, size_t pos) {
 
   bool match;
   for(packToken& p_hook : hooks.list()) {
-    Hook hook = asHook(p_hook);
+    Hook hook = p_hook.as<Hook>();
     match = hook.expr.match(input, pos);
 
     if (match) {
