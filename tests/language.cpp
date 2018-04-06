@@ -181,7 +181,7 @@ TEST_CASE("Build and evaluate VarStatements") {
   REQUIRE(child.map().count("v3") == 1);
 }
 
-TEST_CASE("Build and evaluate ScopedStatements") {
+TEST_CASE("Build and evaluate ScopeStatements") {
   const char* rest = 0;
   const char* code =
     "scoped {\n"
@@ -191,7 +191,7 @@ TEST_CASE("Build and evaluate ScopedStatements") {
     "}";
 
   TokenMap map;
-  ScopedStatement s;
+  ScopeStatement s;
 
   map["v1"] = 10;
   map["v3"] = 30;

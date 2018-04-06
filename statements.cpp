@@ -90,14 +90,14 @@ returnState VarStatement::_exec(TokenMap scope) const {
   return NORMAL;
 }
 
-/* * * * * ScopedStatement Class * * * * */
+/* * * * * ScopeStatement Class * * * * */
 
-void ScopedStatement::_compile(const char* code, const char** rest,
+void ScopeStatement::_compile(const char* code, const char** rest,
                                TokenMap parent_scope) {
   this->code.compile(code, &code, parent_scope);
 }
 
-returnState ScopedStatement::_exec(TokenMap scope) const {
+returnState ScopeStatement::_exec(TokenMap scope) const {
   code.exec(scope.getChild());
   return NORMAL;
 }
@@ -437,12 +437,12 @@ Statement* buildStatement(const char** source, TokenMap scope) {
 
     break;
   case 's':
-    _template = "scoped";
-    for (i = 1; i < 6; ++i)
+    _template = "scope";
+    for (i = 1; i < 5; ++i)
       if (code[i] != _template[i]) break;
 
-    if (i == 6 && !(isalnum(code[i]) || code[i] == '_'))
-      return new ScopedStatement(code+6, source, scope);
+    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
+      return new ScopeStatement(code+5, source, scope);
     
     break;
   case 'v':
