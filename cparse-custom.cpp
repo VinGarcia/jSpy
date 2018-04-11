@@ -7,10 +7,10 @@
 #include "./range.h"
 #include "./jspy-types.h"
 
-#include "./cparse/builtin-features/functions.h"
-#include "./cparse/builtin-features/operations.h"
-#include "./cparse-custom/reservedWords.h"
-#include "./cparse/builtin-features/typeSpecificFunctions.h"
+#include "./cparse/builtin-features/functions.inc"
+#include "./cparse/builtin-features/operations.inc"
+#include "./cparse-custom/reservedWords.inc"
+#include "./cparse/builtin-features/typeSpecificFunctions.inc"
 
 namespace custom_features {
 
