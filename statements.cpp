@@ -10,9 +10,8 @@
 
 /* * * * * Utility functions: * * * * */
 
-std::string parseName(const char** source, char end_char = '\0') {
+std::string parseName(const char* code, const char** rest = NULL, char end_char = '\0') {
   std::stringstream ss;
-  const char* code = *source;
 
   // Parse the function name:
   if (isalpha(*code) || *code == '_') {
@@ -30,7 +29,9 @@ std::string parseName(const char** source, char end_char = '\0') {
     throw syntax_error("Expected variable name!");
   }
 
-  *source = code;
+  if (rest) {
+    *rest = code;
+  }
 
   return ss.str();
 }
@@ -46,7 +47,7 @@ void VarStatement::_compile(const char* code, const char** rest,
   while (1) {
     decl_t decl;
     // Extract the variable name:
-    decl.name = parseName(&code, '\n');
+    decl.name = parseName(code, &code, '\n');
 
     // Find the next character or delimiter in the line:
     while (isblank(*code)) ++code;
@@ -313,8 +314,8 @@ void FuncDeclaration::_compile(const char* code, const char** rest,
 
   // Parse the function name:
   try {
-    name = parseName(&code);
-  } catch(syntax_error e) {
+    name = parseName(code, &code);
+  } catch (const syntax_error& e) {
     throw syntax_error("Missing name after `function` key-word!");
   }
 
@@ -346,8 +347,8 @@ void FuncDeclaration::_compile(std::string name, const char* code,
       
       try {
         // Parse the argument name:
-        args.push_back(parseName(&code));
-      } catch (syntax_error e) {
+        args.push_back(parseName(code, &code));
+      } catch (const syntax_error& e) {
         throw syntax_error("Invalid argument name!");
       }
 
@@ -390,103 +391,28 @@ packToken FuncDeclaration::asFunc() const {
 /* * * * * BlockStatement Class * * * * */
 
 // Decide what type of statement to build:
-Statement* buildStatement(const char** source, TokenMap scope) {
+Statement* BlockStatement::buildStatement(const char** source, TokenMap scope) {
   const char* code = *source;
-  const char* _template;
-  uint i;
 
-  switch (*code) {
-  case '{':
+  // If it is a block statement:
+  if (*code == '{') {
     return new BlockStatement(code, source, scope);
-  case 'b':
-    _template = "break";
-    for (i = 1; i < 5; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
-      return new BreakStatement(code+5, source, scope);
-
-    break;
-  case 'c':
-    _template = "continue";
-    for (i = 1; i < 8; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 8 && !(isalnum(code[i]) || code[i] == '_'))
-      return new ContinueStatement(code+8, source, scope);
-
-    break;
-  case 'i':
-    if (code[1] == 'f' && !(isalnum(code[2]) || code[2] == '_'))
-      return new IfStatement(code+2, source, scope);
-    break;
-  case 'm':
-    _template = "matcher";
-    for (i = 1; i < 7; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 7 && !(isalnum(code[i]) || code[i] == '_'))
-      return new MatcherDeclaration(code+7, source, scope);
-  case 'r':
-    _template = "return";
-    for (i = 1; i < 6; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 6 && !(isalnum(code[i]) || code[i] == '_'))
-      return new ReturnStatement(code+6, source, scope);
-
-    break;
-  case 's':
-    _template = "scope";
-    for (i = 1; i < 5; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
-      return new ScopeStatement(code+5, source, scope);
-    
-    break;
-  case 'v':
-    if (code[1] == 'a' && code[2] == 'r' && !(isalnum(code[3]) || code[3] == '_'))
-      return new VarStatement(code+3, source, scope);
-    break;
-  case 'w':
-    _template = "while";
-    for (i = 1; i < 5; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
-      return new WhileStatement(code+5, source, scope);
-
-    break;
-  case 'y':
-    _template = "yield";
-    for (i = 1; i < 5; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 5 && !(isalnum(code[i]) || code[i] == '_'))
-      return new YieldStatement(code+5, source, scope);
-
-    break;
-  case 'f':
-    if (code[1] == 'o' && code[2] == 'r' && !(isalnum(code[3]) || code[3] == '_'))
-      return new ForStatement(code+3, source, scope);
-
-    _template = "function";
-    for (i = 1; i < 8; ++i)
-      if (code[i] != _template[i]) break;
-
-    // This will work for 'func' or 'function'
-    if ((i == 8 || i == 4) && !(isalnum(code[i]) || code[i] == '_'))
-      return new FuncDeclaration(code+i, source, scope);
-
-    _template = "finish";
-    for (i = 1; i < 6; ++i)
-      if (code[i] != _template[i]) break;
-
-    if (i == 6 && !(isalnum(code[i]) || code[i] == '_'))
-      return new FinishStatement(code+6, source, scope);
   }
 
+  // Parse the first word of the text:
+  std::string name = parseName(code);
+
+  // Check if it is a reserved word:
+  statementMap_t& stmt_map = statementMap();
+  auto it = stmt_map.find(name);
+  if (it != stmt_map.end()) {
+    // If it is parse it and return:
+    Statement* stmt = it->second();
+    stmt->compile(code+name.size(), source, scope);
+    return stmt;
+  }
+
+  // Return a normal statement:
   return new ExpStatement(code, source, scope);
 }
 
@@ -562,4 +488,27 @@ returnState BlockStatement::_exec(TokenMap scope) const {
   }
 
   return rs;
+}
+
+// Anonymous namespace:
+namespace {
+struct Startup {
+  Startup() {
+    auto& statementMap = BlockStatement::statementMap();
+
+    statementMap["break"]    = BlockStatement::factory<BreakStatement>;
+    statementMap["continue"] = BlockStatement::factory<ContinueStatement>;
+    statementMap["if"]       = BlockStatement::factory<IfStatement>;
+    statementMap["matcher"]  = BlockStatement::factory<MatcherDeclaration>;
+    statementMap["return"]   = BlockStatement::factory<ReturnStatement>;
+    statementMap["scope"]    = BlockStatement::factory<ScopeStatement>;
+    statementMap["var"]      = BlockStatement::factory<VarStatement>;
+    statementMap["while"]    = BlockStatement::factory<WhileStatement>;
+    statementMap["yield"]    = BlockStatement::factory<WhileStatement>;
+    statementMap["for"]      = BlockStatement::factory<ForStatement>;
+    statementMap["func"]     = BlockStatement::factory<FuncDeclaration>;
+    statementMap["function"] = BlockStatement::factory<FuncDeclaration>;
+    statementMap["finish"]   = BlockStatement::factory<FinishStatement>;
+  }
+} Startup;
 }

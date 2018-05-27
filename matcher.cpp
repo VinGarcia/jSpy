@@ -116,7 +116,7 @@ struct MatcherStartup {
 /* * * * * MatcherDeclaration Statement * * * * */
 
 // From statements.cpp:
-std::string parseName(const char** source, char end_char = '\n');
+std::string parseName(const char* code, const char** rest, char end_char = '\n');
 
 void MatcherDeclaration::_compile(const char* code, const char** rest,
                                   TokenMap parent_scope) {
@@ -126,7 +126,7 @@ void MatcherDeclaration::_compile(const char* code, const char** rest,
   while (isspace(*code)) ++code;
 
   try {
-    name = parseName(&code);
+    name = parseName(code, &code);
   } catch (const syntax_error& e) {
     throw syntax_error("Missing name on matcher declaration!");
   }

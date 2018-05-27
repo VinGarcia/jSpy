@@ -40,6 +40,20 @@ class Statement {
 };
 
 class BlockStatement : public Statement {
+ public:
+  typedef std::map<std::string, Statement* (*)()> statementMap_t;
+
+  // Associate each type of statement with a keyword:
+  static statementMap_t& statementMap() {
+    static statementMap_t map;
+    return map;
+  }
+
+  // Use this to register new statements on statementsMap.
+  template<typename T>
+  static Statement* factory() { return new T(); }
+
+ private:
   typedef std::list<Statement*> codeBlock_t;
   codeBlock_t list;
 
@@ -49,6 +63,8 @@ class BlockStatement : public Statement {
  private:
   void _compile(const char* code, const char** rest, TokenMap parent_scope);
   returnState _exec(TokenMap scope) const;
+
+  Statement* buildStatement(const char** source, TokenMap scope);
 
  public:
   BlockStatement() {}
