@@ -12,7 +12,8 @@ TEST_CASE("Build and evaluate BlockStatements") {
   const char* code_text = "{ a = 2; b = 3; c = a+b; }End";
   TokenMap map;
 
-  BlockStatement code(code_text, &rest);
+  BlockStatement code;
+  REQUIRE_NOTHROW(code.compile(code_text, &rest));
   REQUIRE_NOTHROW(code.exec(map));
   REQUIRE(map["a"].asDouble() == 2);
   REQUIRE(map["b"].asDouble() == 3);

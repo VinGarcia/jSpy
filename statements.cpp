@@ -396,7 +396,9 @@ Statement* BlockStatement::buildStatement(const char** source, TokenMap scope) {
 
   // If it is a block statement:
   if (*code == '{') {
-    return new BlockStatement(code, source, scope);
+    Statement* stmt = new BlockStatement();
+    stmt->compile(code, source, scope);
+    return stmt;
   }
 
   // Parse the first word of the text:
@@ -413,7 +415,9 @@ Statement* BlockStatement::buildStatement(const char** source, TokenMap scope) {
   }
 
   // Return a normal statement:
-  return new ExpStatement(code, source, scope);
+  Statement* stmt = new ExpStatement();
+  stmt->compile(code, source, scope);
+  return stmt;
 }
 
 void BlockStatement::cleanList(codeBlock_t* list) {

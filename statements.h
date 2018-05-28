@@ -54,7 +54,7 @@ class BlockStatement : public Statement {
   static Statement* factory() { return new T(); }
 
  private:
-  typedef std::list<Statement*> codeBlock_t;
+  typedef std::vector<Statement*> codeBlock_t;
   codeBlock_t list;
 
  private:
@@ -68,18 +68,11 @@ class BlockStatement : public Statement {
 
  public:
   BlockStatement() {}
-  BlockStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
-  BlockStatement(const char* code,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, 0, parent_scope);
-  }
+
+  // Implement The Big 3, for safely copying:
   BlockStatement(const BlockStatement& other);
   ~BlockStatement();
   BlockStatement& operator=(const BlockStatement& other);
-  uint32_t size() { return list.size(); }
 
   virtual Statement* clone() const {
     return new BlockStatement(*this);
@@ -97,10 +90,6 @@ class IfStatement : public Statement {
 
  public:
   IfStatement() {}
-  IfStatement(const char* code, const char** rest = 0,
-              TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new IfStatement(*this);
   }
@@ -117,10 +106,6 @@ class ForStatement : public Statement {
 
  public:
   ForStatement() {}
-  ForStatement(const char* code, const char** rest = 0,
-               TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new ForStatement(*this);
   }
@@ -136,10 +121,6 @@ class WhileStatement : public Statement {
 
  public:
   WhileStatement() {}
-  WhileStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new WhileStatement(*this);
   }
@@ -158,10 +139,6 @@ class VarStatement : public Statement {
 
  public:
   VarStatement() {}
-  VarStatement(const char* code, const char** rest = 0,
-               TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new VarStatement(*this);
   }
@@ -176,10 +153,6 @@ class ScopeStatement : public Statement {
 
  public:
   ScopeStatement() {}
-  ScopeStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new ScopeStatement(*this);
   }
@@ -194,10 +167,6 @@ class ExpStatement : public Statement {
 
  public:
   ExpStatement() {}
-  ExpStatement(const char* code, const char** rest = 0,
-               TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new ExpStatement(*this);
   }
@@ -247,10 +216,6 @@ class ReturnStatement : public Statement {
 
  public:
   ReturnStatement() {}
-  ReturnStatement(const char* code, const char** rest = 0,
-                  TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new ReturnStatement(*this);
   }
@@ -259,10 +224,6 @@ class ReturnStatement : public Statement {
 struct YieldStatement : public ReturnStatement {
  public:
   YieldStatement() {}
-  YieldStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new YieldStatement(*this);
   }
@@ -274,10 +235,6 @@ struct YieldStatement : public ReturnStatement {
 
 struct FinishStatement : public ReturnStatement {
   FinishStatement() {}
-  FinishStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new FinishStatement(*this);
   }
@@ -289,10 +246,6 @@ struct FinishStatement : public ReturnStatement {
 
 struct BreakStatement : public ReturnStatement {
   BreakStatement() {}
-  BreakStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new BreakStatement(*this);
   }
@@ -304,10 +257,6 @@ struct BreakStatement : public ReturnStatement {
 
 struct ContinueStatement : public ReturnStatement {
   ContinueStatement() {}
-  ContinueStatement(const char* code, const char** rest = 0,
-                 TokenMap parent_scope = &TokenMap::empty) {
-    _compile(code, rest, parent_scope);
-  }
   virtual Statement* clone() const {
     return new ContinueStatement(*this);
   }
